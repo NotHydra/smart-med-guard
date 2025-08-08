@@ -1,0 +1,27 @@
+services:
+    mqtt-development:
+        container_name: mqtt-development
+
+        profiles:
+            - development
+
+        image: eclipse-mosquitto:latest
+
+        ports:
+            - "1883:1883"
+            - "9001:9001"
+
+        volumes:
+            - ./mqtt/config:/mosquitto/config
+            - ./mqtt/data:/mosquitto/data
+            - ./mqtt/log:/mosquitto/log
+
+        environment:
+            - MQTT_ALLOW_ANONYMOUS=true
+
+        networks:
+            - system-network
+
+networks:
+    system-network:
+        driver: bridge

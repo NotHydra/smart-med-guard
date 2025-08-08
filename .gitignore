@@ -1,0 +1,4 @@
+mqtt/data/*
+!mqtt/data/*.gitkeep
+mqtt/log/*
+!mqtt/log/*.gitkeep
