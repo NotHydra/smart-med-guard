@@ -16,6 +16,10 @@ export class ConfigService {
         return this.nestConfigService.get<string>("environment")!;
     }
 
+    public getNetwork(): string {
+        return this.getEnvironment() === "development" ? "localhost" : "0.0.0.0";
+    }
+
     public getHost(): string {
         return this.nestConfigService.get<string>("host")!;
     }
