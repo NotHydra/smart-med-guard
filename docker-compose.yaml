@@ -1,11 +1,11 @@
 services:
     mqtt-development:
+        image: eclipse-mosquitto:latest
+
         container_name: mqtt-development
 
         profiles:
             - development
-
-        image: eclipse-mosquitto:latest
 
         ports:
             - "1883:1883"
@@ -17,6 +17,34 @@ services:
 
         networks:
             - system-network
+
+    database-development:
+        image: postgres:latest
+
+        container_name: smart-med-guard-database-development
+
+        profiles:
+            - development
+
+        env_file:
+            - .env
+
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+
+        ports:
+            - ${POSTGRES_PORT}:5432
+
+        volumes:
+            - smart_med_guard_postgres_development_data:/var/lib/postgresql/data
+
+        networks:
+            - system-network
+
+volumes:
+    smart_med_guard_postgres_development_data:
 
 networks:
     system-network:
