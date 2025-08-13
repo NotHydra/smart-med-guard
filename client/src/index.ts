@@ -24,6 +24,31 @@ const IOT_DEVICES: IoTDeviceConfig[] = [
         room: "melati_003",
     },
     {
+        agency: "pertamina_hospital",
+        floor: "2",
+        room: "anggrek_001",
+    },
+    {
+        agency: "pertamina_hospital",
+        floor: "2",
+        room: "anggrek_002",
+    },
+    {
+        agency: "pertamina_hospital",
+        floor: "3",
+        room: "tulip_001",
+    },
+    {
+        agency: "kanojoso_hospital",
+        floor: "1",
+        room: "dahlia_001",
+    },
+    {
+        agency: "kanojoso_hospital",
+        floor: "1",
+        room: "dahlia_002",
+    },
+    {
         agency: "kanojoso_hospital",
         floor: "2",
         room: "mawar_001",
@@ -37,6 +62,51 @@ const IOT_DEVICES: IoTDeviceConfig[] = [
         agency: "kanojoso_hospital",
         floor: "2",
         room: "mawar_003",
+    },
+    {
+        agency: "kanojoso_hospital",
+        floor: "3",
+        room: "sakura_001",
+    },
+    {
+        agency: "siloam_hospital",
+        floor: "1",
+        room: "kenanga_001",
+    },
+    {
+        agency: "siloam_hospital",
+        floor: "1",
+        room: "kenanga_002",
+    },
+    {
+        agency: "siloam_hospital",
+        floor: "2",
+        room: "teratai_001",
+    },
+    {
+        agency: "siloam_hospital",
+        floor: "2",
+        room: "teratai_002",
+    },
+    {
+        agency: "rs_budi_kemuliaan",
+        floor: "1",
+        room: "seruni_001",
+    },
+    {
+        agency: "rs_budi_kemuliaan",
+        floor: "1",
+        room: "seruni_002",
+    },
+    {
+        agency: "rs_budi_kemuliaan",
+        floor: "2",
+        room: "kamboja_001",
+    },
+    {
+        agency: "rs_budi_kemuliaan",
+        floor: "2",
+        room: "kamboja_002",
     },
 ];
 
@@ -121,8 +191,8 @@ function main(): void {
     console.log("Starting IoT device simulators...");
     console.log(`Connecting to MQTT Broker at ${BROKER_ADDRESS}...`);
 
-    IOT_DEVICES.forEach((iotDevice, index) => {
-        setTimeout(() => {
+    IOT_DEVICES.forEach((iotDevice: IoTDeviceConfig, index: number): void => {
+        setTimeout((): void => {
             simulateIoTDevice(iotDevice);
         }, index * 1000);
     });
