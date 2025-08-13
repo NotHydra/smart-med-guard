@@ -102,4 +102,38 @@ export class MQTTController {
             throw error;
         }
     }
+
+    @MessagePattern("iot-device/+/+/+/humidity")
+    iotDeviceHumidity(@Payload() payload: string, @Ctx() context: MqttContext): void {
+        try {
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.START}`,
+                addedContext: this.iotDeviceHumidity.name,
+            });
+
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    payload: payload,
+                    context: context,
+                })}`,
+                addedContext: this.iotDeviceHumidity.name,
+            });
+
+            const splittedTopic: string[] = context.getTopic().split("/");
+
+            this.mqttService.iotDeviceHumidity({
+                agency: splittedTopic[1],
+                floor: splittedTopic[2],
+                room: splittedTopic[3],
+                humidity: JSON.parse(payload),
+            });
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.iotDeviceHumidity.name,
+            });
+
+            throw error;
+        }
+    }
 }
