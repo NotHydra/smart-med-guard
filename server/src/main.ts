@@ -11,6 +11,7 @@ import { PayloadValidationPipe } from "@/common/pipe/payload-validation.pipe";
 
 import { UtilityService } from "@/provider/utility.service";
 
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { AppModule } from "./app.module";
 import { ApiKeyGuard } from "./auth/guard/api-key.guard";
 import { BcryptService } from "./provider/bcrypt.service";
@@ -44,6 +45,14 @@ async function bootstrap(): Promise<void> {
         new SnakeCaseConversionInterceptor(utilityService)
     );
 
+    app.connectMicroservice<MicroserviceOptions>({
+        transport: Transport.MQTT,
+        options: {
+            url: "mqtt://localhost:1883",
+        },
+    });
+
+    await app.startAllMicroservices();
     await app.listen(
         configService.getPort(),
         configService.getEnvironment() === "development" ? "localhost" : "0.0.0.0"

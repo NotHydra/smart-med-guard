@@ -8,7 +8,7 @@ import { BcryptService } from "@/provider/bcrypt.service";
 import { UtilityService } from "@/provider/utility.service";
 
 import { AuthModule } from "@/auth/auth.module";
-
+import { MQTTModule } from "@/microservice/mqtt/mqtt.module";
 import { UserModule } from "@/model/user/user.module";
 
 import { AppController } from "./app.controller";
@@ -17,11 +17,12 @@ import { AppController } from "./app.controller";
     controllers: [AppController],
     providers: [UtilityService, BcryptService],
     imports: [
+        ConfigModule,
         ServeStaticModule.forRoot({
             serveRoot: "/public/upload",
             rootPath: join(__dirname, "../..", "public/upload"),
         }),
-        ConfigModule,
+        MQTTModule,
         AuthModule,
         UserModule,
     ],
