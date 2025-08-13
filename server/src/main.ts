@@ -53,7 +53,7 @@ async function bootstrap(): Promise<void> {
     });
 
     await app.startAllMicroservices();
-    await app.listen(configService.getPort(), configService.getNetwork());
+    await app.listen(configService.getPort(), configService.getHost());
 
     Logger.log(`⚙️  Environment: ${utilityService.capitalize(configService.getEnvironment())}`);
     Logger.log(

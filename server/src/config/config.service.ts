@@ -16,10 +16,6 @@ export class ConfigService {
         return this.nestConfigService.get<string>("environment")!;
     }
 
-    public getNetwork(): string {
-        return "0.0.0.0";
-    }
-
     public getHost(): string {
         return this.nestConfigService.get<string>("host")!;
     }
@@ -48,10 +44,20 @@ export class ConfigService {
         return this.nestConfigService.get<number>("mqttPort")!;
     }
 
-    public getBaseURL(): string {
-        const protocol: string = this.getEnvironment() === "development" ? "http" : "https";
+    public isDevelopment(): boolean {
+        return this.getEnvironment() === "development";
+    }
 
-        return `${protocol}://${this.getHost()}${protocol === "https" ? "" : `:${this.getPort()}`}`;
+    public isProduction(): boolean {
+        return this.getEnvironment() === "production";
+    }
+
+    public getProtocol(): string {
+        return this.isDevelopment() ? "http" : "https";
+    }
+
+    public getBaseURL(): string {
+        return `${this.getProtocol()}://${this.getHost()}${this.isProduction() ? "" : `:${this.getPort()}`}`;
     }
 
     public getMQTTURL(): string {
