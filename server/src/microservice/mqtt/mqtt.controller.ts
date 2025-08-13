@@ -1,4 +1,5 @@
 import { Controller, Get, HttpStatus } from "@nestjs/common";
+import { MessagePattern, Payload } from "@nestjs/microservices";
 
 import { MESSAGE } from "@/common/constant/message";
 import { SuccessResponseInterface } from "@/common/interface/response.interface";
@@ -38,6 +39,30 @@ export class MQTTController {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
                 addedContext: this.publishGreet.name,
+            });
+
+            throw error;
+        }
+    }
+
+    @MessagePattern("hello")
+    subscribeHello(@Payload() payload: string): void {
+        try {
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.START}`,
+                addedContext: this.subscribeHello.name,
+            });
+
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                    payload: JSON.parse(payload),
+                })}`,
+                addedContext: this.subscribeHello.name,
+            });
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.subscribeHello.name,
             });
 
             throw error;
