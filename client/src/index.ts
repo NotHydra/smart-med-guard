@@ -1,13 +1,13 @@
 import mqtt, { IClientOptions, MqttClient } from "mqtt";
 
-interface SensorConfig {
+interface IoTDeviceConfig {
     agency: string;
     floor: string;
     room: string;
 }
 
 const BROKER_ADDRESS: string = "mqtt://0.0.0.0:1883";
-const SENSORS: SensorConfig[] = [
+const IOT_DEVICES: IoTDeviceConfig[] = [
     {
         agency: "pertamina_hospital",
         floor: "1",
@@ -40,16 +40,16 @@ const SENSORS: SensorConfig[] = [
     },
 ];
 
-function simulateSensor(sensorConfig: SensorConfig): void {
-    const { agency, floor, room }: SensorConfig = sensorConfig;
+function simulateIoTDevice(iotDeviceConfig: IoTDeviceConfig): void {
+    const { agency, floor, room }: IoTDeviceConfig = iotDeviceConfig;
     const name: string = `${agency}-${floor}-${room}`;
     const temperatureTopic: string = `iot-device/${agency}/${floor}/${room}/temperature`;
     const humidityTopic: string = `iot-device/${agency}/${floor}/${room}/humidity`;
     const occupancyTopic: string = `iot-device/${agency}/${floor}/${room}/occupancy`;
 
-    console.log(`Starting sensor for ${name}...`);
+    console.log(`Starting IoT device for ${name}...`);
 
-    const clientId: string = `sensor-${name}-${Math.floor(Math.random() * 1000)}`;
+    const clientId: string = `iot-device-${name}-${Math.floor(Math.random() * 1000)}`;
     const options: IClientOptions = {
         clientId: clientId,
         clean: true,
@@ -63,7 +63,7 @@ function simulateSensor(sensorConfig: SensorConfig): void {
     const client: MqttClient = mqtt.connect(BROKER_ADDRESS, options);
 
     client.on("connect", (): void => {
-        console.log(`✅ Sensor for '${name}' connected to MQTT Broker!`);
+        console.log(`✅ IoT device for '${name}' connected to MQTT Broker!`);
 
         setInterval((): void => {
             try {
@@ -103,34 +103,34 @@ function simulateSensor(sensorConfig: SensorConfig): void {
     });
 
     client.on("error", (err: Error): void => {
-        console.error(`❌ Error with sensor for ${name}:`, err);
+        console.error(`❌ Error with IoT device for ${name}:`, err);
 
         client.end();
     });
 
     client.on("reconnect", (): void => {
-        console.log(`🔄 Reconnecting sensor for ${name}...`);
+        console.log(`🔄 Reconnecting IoT device for ${name}...`);
     });
 
     client.on("close", (): void => {
-        console.log(`🔒 Sensor for ${name} connection closed.`);
+        console.log(`🔒 IoT device for ${name} connection closed.`);
     });
 }
 
 function main(): void {
-    console.log("Starting sensor simulators...");
+    console.log("Starting IoT device simulators...");
     console.log(`Connecting to MQTT Broker at ${BROKER_ADDRESS}...`);
 
-    SENSORS.forEach(simulateSensor);
+    IOT_DEVICES.forEach(simulateIoTDevice);
 
     process.on("SIGINT", (): void => {
-        console.log("\nStopping all sensor simulators...");
+        console.log("\nStopping all IoT device simulators...");
 
-        SENSORS.forEach((sensor) => {
-            console.log(`Stopping sensor for ${sensor.room}...`);
+        IOT_DEVICES.forEach((iotDevice) => {
+            console.log(`Stopping IoT device for ${iotDevice.room}...`);
         });
 
-        console.log("All sensors stopped. Exiting...");
+        console.log("All IoT devices stopped. Exiting...");
 
         process.exit();
     });
