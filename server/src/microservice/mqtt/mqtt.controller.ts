@@ -72,12 +72,12 @@ export class MQTTController {
     @MessagePattern("iot-device/+/+/+/temperature")
     iotDeviceTemperature(@Payload() payload: string, @Ctx() context: MqttContext): void {
         try {
-            this.loggerService.log({
+            this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.START}`,
                 addedContext: this.iotDeviceTemperature.name,
             });
 
-            this.loggerService.debug({
+            this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     payload: payload,
                     context: context,
@@ -106,12 +106,12 @@ export class MQTTController {
     @MessagePattern("iot-device/+/+/+/humidity")
     iotDeviceHumidity(@Payload() payload: string, @Ctx() context: MqttContext): void {
         try {
-            this.loggerService.log({
+            this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.START}`,
                 addedContext: this.iotDeviceHumidity.name,
             });
 
-            this.loggerService.debug({
+            this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     payload: payload,
                     context: context,
@@ -140,12 +140,12 @@ export class MQTTController {
     @MessagePattern("iot-device/+/+/+/occupancy")
     iotDeviceOccupancy(@Payload() payload: string, @Ctx() context: MqttContext): void {
         try {
-            this.loggerService.log({
+            this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.START}`,
                 addedContext: this.iotDeviceOccupancy.name,
             });
 
-            this.loggerService.debug({
+            this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     payload: payload,
                     context: context,
