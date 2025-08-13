@@ -99,7 +99,7 @@ function simulateIoTDevice(iotDeviceConfig: IoTDeviceConfig): void {
             } catch (error) {
                 console.error(`❌ Error publishing data for ${name}:`, error);
             }
-        }, 1 * 1000);
+        }, 3 * 1000);
     });
 
     client.on("error", (err: Error): void => {
@@ -121,7 +121,11 @@ function main(): void {
     console.log("Starting IoT device simulators...");
     console.log(`Connecting to MQTT Broker at ${BROKER_ADDRESS}...`);
 
-    IOT_DEVICES.forEach(simulateIoTDevice);
+    IOT_DEVICES.forEach((iotDevice, index) => {
+        setTimeout(() => {
+            simulateIoTDevice(iotDevice);
+        }, index * 1000);
+    });
 
     process.on("SIGINT", (): void => {
         console.log("\nStopping all IoT device simulators...");
