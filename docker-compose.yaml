@@ -1,8 +1,51 @@
 services:
+    server-development:
+        container_name: smart-med-guard-server-development
+
+        profiles:
+            - development
+
+        build:
+            context: ./server
+            target: development
+
+        env_file:
+            - .env
+
+        environment:
+            - LOG_LEVEL=${SERVER_LOG_LEVEL}
+            - ENVIRONMENT=${SERVER_ENVIRONMENT}
+            - HOST=${SERVER_HOST}
+            - PORT=${SERVER_PORT}
+            - API_KEY=${SERVER_API_KEY}
+            - BCRYPT_SALT_ROUNDS=${SERVER_BCRYPT_SALT_ROUNDS}
+            - JWT_SECRET=${SERVER_JWT_SECRET}
+            - MQTT_HOST=${MQTT_HOST}
+            - MQTT_PORT=${MQTT_PORT}
+            - POSTGRES_URL=${POSTGRES_URL}
+
+        ports:
+            - ${SERVER_PORT}:${SERVER_PORT}
+
+        depends_on:
+            mqtt-development:
+                condition: service_started
+
+            database-development:
+                condition: service_healthy
+
+        volumes:
+            - ./server/src:/app/src:ro
+
+        restart: always
+
+        networks:
+            - system-network
+
     mqtt-development:
         image: eclipse-mosquitto:latest
 
-        container_name: mqtt-development
+        container_name: smart-med-guard-mqtt-development
 
         profiles:
             - development
@@ -11,7 +54,7 @@ services:
             - .env
 
         ports:
-            - ${MQTT_PORT}:1883
+            - ${MQTT_PORT}:${MQTT_PORT}
 
         volumes:
             - ./mqtt/config:/mosquitto/config
@@ -38,7 +81,7 @@ services:
             - POSTGRES_DB=${POSTGRES_DB}
 
         ports:
-            - ${POSTGRES_PORT}:5432
+            - ${POSTGRES_PORT}:${POSTGRES_PORT}
 
         volumes:
             - smart_med_guard_postgres_development_data:/var/lib/postgresql/data
@@ -46,9 +89,22 @@ services:
         networks:
             - system-network
 
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
 volumes:
     smart_med_guard_postgres_development_data:
 
 networks:
     system-network:
         driver: bridge
+
+        driver_opts:
+            com.docker.network.bridge.enable_ipv6: "false"
