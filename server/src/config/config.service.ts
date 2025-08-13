@@ -17,7 +17,7 @@ export class ConfigService {
     }
 
     public getNetwork(): string {
-        return this.getEnvironment() === "development" ? "localhost" : "0.0.0.0";
+        return "0.0.0.0";
     }
 
     public getHost(): string {
@@ -40,10 +40,22 @@ export class ConfigService {
         return this.nestConfigService.get<string>("jwtSecret")!;
     }
 
+    public getMQTTHost(): string {
+        return this.nestConfigService.get<string>("mqttHost")!;
+    }
+
+    public getMQTTPort(): number {
+        return this.nestConfigService.get<number>("mqttPort")!;
+    }
+
     public getBaseURL(): string {
         const protocol: string = this.getEnvironment() === "development" ? "http" : "https";
 
         return `${protocol}://${this.getHost()}${protocol === "https" ? "" : `:${this.getPort()}`}`;
+    }
+
+    public getMQTTURL(): string {
+        return `mqtt://${this.getMQTTHost()}:${this.getMQTTPort()}`;
     }
 
     public getMulterFileName() {

@@ -48,7 +48,7 @@ async function bootstrap(): Promise<void> {
     app.connectMicroservice<MicroserviceOptions>({
         transport: Transport.MQTT,
         options: {
-            url: "mqtt://localhost:1883",
+            url: configService.getMQTTURL(),
         },
     });
 
