@@ -119,4 +119,40 @@ export class MQTTService {
             throw new InternalServerErrorException("Internal Server Error");
         }
     }
+
+    public iotDeviceOccupancy({
+        agency,
+        floor,
+        room,
+        occupancy,
+    }: {
+        agency: string;
+        floor: string;
+        room: string;
+        occupancy: boolean;
+    }): void {
+        try {
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.START}`,
+                addedContext: this.iotDeviceOccupancy.name,
+            });
+
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    agency: agency,
+                    floor: floor,
+                    room: room,
+                    occupancy: occupancy,
+                })}`,
+                addedContext: this.iotDeviceOccupancy.name,
+            });
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.iotDeviceOccupancy.name,
+            });
+
+            throw new InternalServerErrorException("Internal Server Error");
+        }
+    }
 }
