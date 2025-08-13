@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus } from "@nestjs/common";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import { Ctx, MessagePattern, MqttContext, Payload } from "@nestjs/microservices";
 
 import { MESSAGE } from "@/common/constant/message";
 import { SuccessResponseInterface } from "@/common/interface/response.interface";
@@ -63,6 +63,40 @@ export class MQTTController {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
                 addedContext: this.subscribeHello.name,
+            });
+
+            throw error;
+        }
+    }
+
+    @MessagePattern("iot-device/+/+/+/temperature")
+    iotDeviceTemperature(@Payload() payload: string, @Ctx() context: MqttContext): void {
+        try {
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.START}`,
+                addedContext: this.iotDeviceTemperature.name,
+            });
+
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    payload: payload,
+                    context: context,
+                })}`,
+                addedContext: this.iotDeviceTemperature.name,
+            });
+
+            const splittedTopic: string[] = context.getTopic().split("/");
+
+            this.mqttService.iotDeviceTemperature({
+                agency: splittedTopic[1],
+                floor: splittedTopic[2],
+                room: splittedTopic[3],
+                temperature: JSON.parse(payload),
+            });
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.iotDeviceTemperature.name,
             });
 
             throw error;

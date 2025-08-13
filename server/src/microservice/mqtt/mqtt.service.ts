@@ -47,4 +47,40 @@ export class MQTTService {
             throw new InternalServerErrorException("Internal Server Error");
         }
     }
+
+    public iotDeviceTemperature({
+        agency,
+        floor,
+        room,
+        temperature,
+    }: {
+        agency: string;
+        floor: string;
+        room: string;
+        temperature: number;
+    }): void {
+        try {
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.START}`,
+                addedContext: this.iotDeviceTemperature.name,
+            });
+
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    agency: agency,
+                    floor: floor,
+                    room: room,
+                    temperature: temperature,
+                })}`,
+                addedContext: this.iotDeviceTemperature.name,
+            });
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.iotDeviceTemperature.name,
+            });
+
+            throw new InternalServerErrorException("Internal Server Error");
+        }
+    }
 }
