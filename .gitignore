@@ -1,3 +1,5 @@
+.env
+
 mqtt/data/*
 !mqtt/data/*.gitkeep
 mqtt/log/*
