@@ -4,13 +4,10 @@
 			"path": "./"
 		},
 		{
-			"path": "./diagram"
-		},
-		{
-			"path": "./mqtt"
-		},
-		{
 			"path": "./server"
+		},
+		{
+			"path": "./client"
 		},
 		{
 			"path": "./website"
