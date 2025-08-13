@@ -19,15 +19,15 @@ export class MQTTController {
         this.loggerService = new LoggerService(MQTTController.name);
     }
 
-    @Get("publish")
-    public publish(): SuccessResponseInterface<null> {
+    @Get("publish/greet")
+    public publishGreet(): SuccessResponseInterface<null> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.publish.name,
+                addedContext: this.publishGreet.name,
             });
 
-            this.mqttService.publish();
+            this.mqttService.publishGreet();
 
             return this.utilityService.generateSuccessResponse<null>({
                 status: HttpStatus.OK,
@@ -37,7 +37,7 @@ export class MQTTController {
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.publish.name,
+                addedContext: this.publishGreet.name,
             });
 
             throw error;

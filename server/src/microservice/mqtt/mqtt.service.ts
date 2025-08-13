@@ -17,11 +17,11 @@ export class MQTTService {
         this.loggerService = new LoggerService(MQTTService.name);
     }
 
-    public publish(): null {
+    public publishGreet(): null {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.publish.name,
+                addedContext: this.publishGreet.name,
             });
 
             const topic: string = "hello";
@@ -34,14 +34,14 @@ export class MQTTService {
                     topic: topic,
                     payload: this.utilityService.pretty(payload),
                 })}`,
-                addedContext: this.publish.name,
+                addedContext: this.publishGreet.name,
             });
 
             return null;
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.publish.name,
+                addedContext: this.publishGreet.name,
             });
 
             throw new InternalServerErrorException("Internal Server Error");
