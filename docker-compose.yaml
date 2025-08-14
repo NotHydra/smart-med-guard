@@ -64,6 +64,43 @@ services:
         networks:
             - system-network
 
+    prisma-studio-development:
+        container_name: smart-med-guard-prisma-studio-development
+
+        profiles:
+            - development
+
+        build:
+            context: ./server
+            target: base
+
+        env_file:
+            - .env
+
+        environment:
+            - POSTGRES_URL=${POSTGRES_URL}
+
+        ports:
+            - ${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}
+
+        depends_on:
+            database-development:
+                condition: service_healthy
+
+        command:
+            [
+                "pnpm",
+                "run",
+                "prisma:studio",
+                "--port",
+                "${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}",
+            ]
+
+        restart: always
+
+        networks:
+            - system-network
+
     database-development:
         image: postgres:latest
 
