@@ -1,12 +1,12 @@
 services:
-    client-development:
-        container_name: smart-med-guard-client-development
+    mqtt-test-development:
+        container_name: smart-med-guard-mqtt-test-development
 
         profiles:
             - development
 
         build:
-            context: ./client
+            context: ./mqtt-test
             target: development
 
         env_file:
