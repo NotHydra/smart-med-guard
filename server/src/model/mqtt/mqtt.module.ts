@@ -10,8 +10,8 @@ import { UtilityService } from "@/provider/utility.service";
 import { HumidityReadingService } from "@/model/humidity-reading/humidity-reading.service";
 import { OccupancyReadingService } from "@/model/occupancy-reading/occupancy-reading.service";
 import { TemperatureReadingService } from "@/model/temperature-reading/temperature-reading.service";
-
 import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
+
 import { MQTTController } from "./mqtt.controller";
 import { MQTTService } from "./mqtt.service";
 
