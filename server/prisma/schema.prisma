@@ -16,3 +16,52 @@ model User {
 
   @@map("user")
 }
+
+model IoTDevice {
+  id        String   @id @default(cuid()) @map("id")
+  agency    String   @map("agency")
+  floor     String   @map("floor")
+  room      String   @map("room")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  temperatureReadings TemperatureReading[]
+  humidityReadings    HumidityReading[]
+  occupancyReadings   OccupancyReading[]
+
+  @@unique([agency, floor, room])
+  @@map("iot_device")
+}
+
+model TemperatureReading {
+  id          String   @id @default(cuid()) @map("id")
+  iotDeviceId    String   @map("iot_device_id")
+  temperature Float    @map("temperature")
+  timestamp   DateTime @default(now()) @map("timestamp")
+
+  iotDevice IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+
+  @@map("temperature_reading")
+}
+
+model HumidityReading {
+  id        String   @id @default(cuid()) @map("id")
+  iotDeviceId  String   @map("iot_device_id")
+  humidity  Float    @map("humidity")
+  timestamp DateTime @default(now()) @map("timestamp")
+
+  iotDevice IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+
+  @@map("humidity_reading")
+}
+
+model OccupancyReading {
+  id        String   @id @default(cuid()) @map("id")
+  iotDeviceId  String   @map("iot_device_id")
+  occupancy Boolean  @map("occupancy")
+  timestamp DateTime @default(now()) @map("timestamp")
+
+  iotDevice IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
+
+  @@map("occupancy_reading")
+}
