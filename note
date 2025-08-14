@@ -1,0 +1,7 @@
+docker compose --profile development up -d
+
+docker compose --profile development exec server-development pnpm run prisma:migrate
+docker compose --profile development exec server-development pnpm run prisma:generate
+docker compose --profile development exec server-development pnpm run prisma:seed
+
+POSTGRES_URL="postgresql://root:root@0.0.0.0:5432/smart_med_guard?schema=public" pnpm run prisma:migrate ??

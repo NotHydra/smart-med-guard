@@ -6,7 +6,17 @@ interface IoTDeviceConfig {
     room: string;
 }
 
-const BROKER_ADDRESS: string = "mqtt://0.0.0.0:1883";
+const MQTT_HOST: string | undefined = process.env.MQTT_HOST;
+if (MQTT_HOST === undefined) {
+    throw new Error("MQTT_HOST environment variable is not set.");
+}
+
+const MQTT_PORT: string | undefined = process.env.MQTT_PORT;
+if (MQTT_PORT === undefined) {
+    throw new Error("MQTT_PORT environment variable is not set.");
+}
+
+const BROKER_ADDRESS: string = `mqtt://${MQTT_HOST}:${MQTT_PORT}`;
 const IOT_DEVICES: IoTDeviceConfig[] = [
     {
         agency: "pertamina_hospital",

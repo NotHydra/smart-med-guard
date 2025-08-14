@@ -1,4 +1,33 @@
 services:
+    client-development:
+        container_name: smart-med-guard-client-development
+
+        profiles:
+            - development
+
+        build:
+            context: ./client
+            target: development
+
+        env_file:
+            - .env
+
+        environment:
+            - MQTT_HOST=${MQTT_HOST}
+            - MQTT_PORT=${MQTT_PORT}
+
+        depends_on:
+            server-development:
+                condition: service_healthy
+
+        volumes:
+            - ./client/src:/app/src:ro
+
+        restart: always
+
+        networks:
+            - system-network
+
     server-development:
         container_name: smart-med-guard-server-development
 
@@ -42,6 +71,16 @@ services:
         networks:
             - system-network
 
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:${SERVER_PORT}/health || exit 1",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
     mqtt-development:
         image: eclipse-mosquitto:latest
 
@@ -84,7 +123,7 @@ services:
             - ${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}
 
         depends_on:
-            database-development:
+            server-development:
                 condition: service_healthy
 
         command:
