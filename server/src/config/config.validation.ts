@@ -19,6 +19,15 @@ class EnvironmentVariables {
 
     @IsString()
     JWT_SECRET: string;
+
+    @IsNumber()
+    WEBSOCKET_PORT: number;
+
+    @IsString()
+    MQTT_HOST: string;
+
+    @IsNumber()
+    MQTT_PORT: number;
 }
 
 export function validate(config: Record<string, unknown>): EnvironmentVariables {

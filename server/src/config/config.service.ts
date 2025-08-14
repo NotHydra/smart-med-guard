@@ -36,6 +36,10 @@ export class ConfigService {
         return this.nestConfigService.get<string>("jwtSecret")!;
     }
 
+    public getWebSocketPort(): number {
+        return this.nestConfigService.get<number>("webSocketPort")!;
+    }
+
     public getMQTTHost(): string {
         return this.nestConfigService.get<string>("mqttHost")!;
     }
