@@ -9,6 +9,10 @@ import { UtilityService } from "@/provider/utility.service";
 
 import { AuthModule } from "@/auth/auth.module";
 import { MQTTModule } from "@/microservice/mqtt/mqtt.module";
+import { HumidityReadingModule } from "@/model/humidity-reading/humidity-reading.module";
+import { IoTDeviceModule } from "@/model/iot-device/iot-device.module";
+import { OccupancyReadingModule } from "@/model/occupancy-reading/occupancy-reading.module";
+import { TemperatureReadingModule } from "@/model/temperature-reading/temperature-reading.module";
 import { UserModule } from "@/model/user/user.module";
 
 import { AppController } from "./app.controller";
@@ -25,6 +29,10 @@ import { AppController } from "./app.controller";
         MQTTModule,
         AuthModule,
         UserModule,
+        IoTDeviceModule,
+        TemperatureReadingModule,
+        HumidityReadingModule,
+        OccupancyReadingModule,
     ],
 })
 export class AppModule {}
