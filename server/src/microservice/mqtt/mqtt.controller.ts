@@ -46,16 +46,17 @@ export class MQTTController {
     }
 
     @MessagePattern("hello")
-    subscribeHello(@Payload() payload: string): void {
+    subscribeHello(@Payload() payload: string, @Ctx() context: MqttContext): void {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
                 addedContext: this.subscribeHello.name,
             });
 
-            this.loggerService.log({
-                message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
-                    payload: JSON.parse(payload),
+            this.loggerService.verbose({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    payload: payload,
+                    context: context,
                 })}`,
                 addedContext: this.subscribeHello.name,
             });
@@ -70,11 +71,11 @@ export class MQTTController {
     }
 
     @MessagePattern("iot-device/+/+/+/temperature")
-    iotDeviceTemperature(@Payload() payload: string, @Ctx() context: MqttContext): void {
+    async subscribeIoTDeviceTemperature(@Payload() payload: string, @Ctx() context: MqttContext): Promise<void> {
         try {
             this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.iotDeviceTemperature.name,
+                addedContext: this.subscribeIoTDeviceTemperature.name,
             });
 
             this.loggerService.verbose({
@@ -82,21 +83,21 @@ export class MQTTController {
                     payload: payload,
                     context: context,
                 })}`,
-                addedContext: this.iotDeviceTemperature.name,
+                addedContext: this.subscribeIoTDeviceTemperature.name,
             });
 
             const splittedTopic: string[] = context.getTopic().split("/");
 
-            this.mqttService.iotDeviceTemperature({
+            await this.mqttService.subscribeIoTDeviceTemperature({
                 agency: splittedTopic[1],
                 floor: splittedTopic[2],
                 room: splittedTopic[3],
-                temperature: JSON.parse(payload),
+                temperature: JSON.parse(payload) as number,
             });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.iotDeviceTemperature.name,
+                addedContext: this.subscribeIoTDeviceTemperature.name,
             });
 
             throw error;
@@ -104,11 +105,11 @@ export class MQTTController {
     }
 
     @MessagePattern("iot-device/+/+/+/humidity")
-    iotDeviceHumidity(@Payload() payload: string, @Ctx() context: MqttContext): void {
+    async subscribeIoTDeviceHumidity(@Payload() payload: string, @Ctx() context: MqttContext): Promise<void> {
         try {
             this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.iotDeviceHumidity.name,
+                addedContext: this.subscribeIoTDeviceHumidity.name,
             });
 
             this.loggerService.verbose({
@@ -116,21 +117,21 @@ export class MQTTController {
                     payload: payload,
                     context: context,
                 })}`,
-                addedContext: this.iotDeviceHumidity.name,
+                addedContext: this.subscribeIoTDeviceHumidity.name,
             });
 
             const splittedTopic: string[] = context.getTopic().split("/");
 
-            this.mqttService.iotDeviceHumidity({
+            await this.mqttService.subscribeIoTDeviceHumidity({
                 agency: splittedTopic[1],
                 floor: splittedTopic[2],
                 room: splittedTopic[3],
-                humidity: JSON.parse(payload),
+                humidity: JSON.parse(payload) as number,
             });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.iotDeviceHumidity.name,
+                addedContext: this.subscribeIoTDeviceHumidity.name,
             });
 
             throw error;
@@ -138,11 +139,11 @@ export class MQTTController {
     }
 
     @MessagePattern("iot-device/+/+/+/occupancy")
-    iotDeviceOccupancy(@Payload() payload: string, @Ctx() context: MqttContext): void {
+    async subscribeIoTDeviceOccupancy(@Payload() payload: string, @Ctx() context: MqttContext): Promise<void> {
         try {
             this.loggerService.verbose({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.iotDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDeviceOccupancy.name,
             });
 
             this.loggerService.verbose({
@@ -150,21 +151,21 @@ export class MQTTController {
                     payload: payload,
                     context: context,
                 })}`,
-                addedContext: this.iotDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDeviceOccupancy.name,
             });
 
             const splittedTopic: string[] = context.getTopic().split("/");
 
-            this.mqttService.iotDeviceOccupancy({
+            await this.mqttService.subscribeIoTDeviceOccupancy({
                 agency: splittedTopic[1],
                 floor: splittedTopic[2],
                 room: splittedTopic[3],
-                occupancy: JSON.parse(payload),
+                occupancy: JSON.parse(payload) as boolean,
             });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.iotDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDeviceOccupancy.name,
             });
 
             throw error;

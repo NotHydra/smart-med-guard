@@ -6,12 +6,19 @@ import { MESSAGE } from "@/common/constant/message";
 import { LoggerService } from "@/provider/logger.service";
 import { UtilityService } from "@/provider/utility.service";
 
+import { HumidityReadingService } from "@/model/humidity-reading/humidity-reading.service";
+import { OccupancyReadingService } from "@/model/occupancy-reading/occupancy-reading.service";
+import { TemperatureReadingService } from "@/model/temperature-reading/temperature-reading.service";
+
 @Injectable()
 export class MQTTService {
     private readonly loggerService: LoggerService;
 
     constructor(
         private readonly utilityService: UtilityService,
+        private readonly temperatureReadingService: TemperatureReadingService,
+        private readonly humidityReadingService: HumidityReadingService,
+        private readonly occupancyReadingService: OccupancyReadingService,
         @Inject("MQTT_SERVICE") private client: ClientProxy
     ) {
         this.loggerService = new LoggerService(MQTTService.name);
@@ -48,7 +55,7 @@ export class MQTTService {
         }
     }
 
-    public iotDeviceTemperature({
+    public async subscribeIoTDeviceTemperature({
         agency,
         floor,
         room,
@@ -58,11 +65,11 @@ export class MQTTService {
         floor: string;
         room: string;
         temperature: number;
-    }): void {
+    }): Promise<void> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.iotDeviceTemperature.name,
+                addedContext: this.subscribeIoTDeviceTemperature.name,
             });
 
             this.loggerService.debug({
@@ -72,19 +79,26 @@ export class MQTTService {
                     room: room,
                     temperature: temperature,
                 })}`,
-                addedContext: this.iotDeviceTemperature.name,
+                addedContext: this.subscribeIoTDeviceTemperature.name,
+            });
+
+            await this.temperatureReadingService.add({
+                agency: agency,
+                floor: floor,
+                room: room,
+                temperature: temperature,
             });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.iotDeviceTemperature.name,
+                addedContext: this.subscribeIoTDeviceTemperature.name,
             });
 
-            throw new InternalServerErrorException("Internal Server Error");
+            throw error;
         }
     }
 
-    public iotDeviceHumidity({
+    public async subscribeIoTDeviceHumidity({
         agency,
         floor,
         room,
@@ -94,11 +108,11 @@ export class MQTTService {
         floor: string;
         room: string;
         humidity: number;
-    }): void {
+    }): Promise<void> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.iotDeviceHumidity.name,
+                addedContext: this.subscribeIoTDeviceHumidity.name,
             });
 
             this.loggerService.debug({
@@ -108,19 +122,26 @@ export class MQTTService {
                     room: room,
                     humidity: humidity,
                 })}`,
-                addedContext: this.iotDeviceHumidity.name,
+                addedContext: this.subscribeIoTDeviceHumidity.name,
+            });
+
+            await this.humidityReadingService.add({
+                agency: agency,
+                floor: floor,
+                room: room,
+                humidity: humidity,
             });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.iotDeviceHumidity.name,
+                addedContext: this.subscribeIoTDeviceHumidity.name,
             });
 
-            throw new InternalServerErrorException("Internal Server Error");
+            throw error;
         }
     }
 
-    public iotDeviceOccupancy({
+    public async subscribeIoTDeviceOccupancy({
         agency,
         floor,
         room,
@@ -130,11 +151,11 @@ export class MQTTService {
         floor: string;
         room: string;
         occupancy: boolean;
-    }): void {
+    }): Promise<void> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.iotDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDeviceOccupancy.name,
             });
 
             this.loggerService.debug({
@@ -144,15 +165,22 @@ export class MQTTService {
                     room: room,
                     occupancy: occupancy,
                 })}`,
-                addedContext: this.iotDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDeviceOccupancy.name,
+            });
+
+            await this.occupancyReadingService.add({
+                agency: agency,
+                floor: floor,
+                room: room,
+                occupancy: occupancy,
             });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.iotDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDeviceOccupancy.name,
             });
 
-            throw new InternalServerErrorException("Internal Server Error");
+            throw error;
         }
     }
 }
