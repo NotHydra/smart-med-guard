@@ -106,7 +106,7 @@ export class MQTTService {
                 addedContext: this.subscribeIoTDevice.name,
             });
 
-            await Promise.all([
+            const [temperatureReading, humidityReading, occupancyReading] = await Promise.all([
                 this.temperatureReadingService.add({
                     iotDeviceId: iotDevice.id,
                     temperature: temperature,
@@ -131,9 +131,17 @@ export class MQTTService {
             });
 
             this.webSocketService.server.to(topic).emit("new", {
-                temperature: temperature,
-                humidity: humidity,
-                occupancy: occupancy,
+                temperature: {
+                    value: temperatureReading.temperature,
+                    timestamp: temperatureReading.timestamp,
+                },
+                humidity: {
+                    value: humidityReading.humidity,
+                    timestamp: humidityReading.timestamp,
+                },
+                occupancy: {
+                    value: occupancyReading.occupancy,
+                },
             });
 
             this.loggerService.debug({
