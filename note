@@ -10,3 +10,5 @@ docker compose up --build --detach server-development
 POSTGRES_URL="postgresql://root:root@0.0.0.0:5432/smart_med_guard?schema=public" pnpm run prisma:migrate ??
 
 wscat -c "ws://localhost:3003/socket.io/?EIO=4&transport=websocket"
+
+docker exec smart-med-guard-database-development pg_dump -U root -d smart_med_guard > database_export_$(date +%Y%m%d_%H%M%S).sql
