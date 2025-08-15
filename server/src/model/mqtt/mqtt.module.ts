@@ -8,9 +8,10 @@ import { PrismaService } from "@/provider/prisma.service";
 import { UtilityService } from "@/provider/utility.service";
 
 import { HumidityReadingService } from "@/model/humidity-reading/humidity-reading.service";
+import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
 import { OccupancyReadingService } from "@/model/occupancy-reading/occupancy-reading.service";
 import { TemperatureReadingService } from "@/model/temperature-reading/temperature-reading.service";
-import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
+import { WebSocketService } from "@/model/web-socket/web-socket.service";
 
 import { MQTTController } from "./mqtt.controller";
 import { MQTTService } from "./mqtt.service";
@@ -25,6 +26,7 @@ import { MQTTService } from "./mqtt.service";
         TemperatureReadingService,
         HumidityReadingService,
         OccupancyReadingService,
+        WebSocketService,
         MQTTService,
     ],
     imports: [

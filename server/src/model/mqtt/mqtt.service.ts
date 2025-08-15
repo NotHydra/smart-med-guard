@@ -1,6 +1,6 @@
 import { Inject, Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { IoTDevice } from "@prisma/client";
+import { HumidityReading, IoTDevice, OccupancyReading, TemperatureReading } from "@prisma/client";
 
 import { MESSAGE } from "@/common/constant/message";
 
@@ -11,6 +11,7 @@ import { HumidityReadingService } from "@/model/humidity-reading/humidity-readin
 import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
 import { OccupancyReadingService } from "@/model/occupancy-reading/occupancy-reading.service";
 import { TemperatureReadingService } from "@/model/temperature-reading/temperature-reading.service";
+import { WebSocketService } from "@/model/web-socket/web-socket.service";
 
 @Injectable()
 export class MQTTService {
@@ -22,6 +23,7 @@ export class MQTTService {
         private readonly temperatureReadingService: TemperatureReadingService,
         private readonly humidityReadingService: HumidityReadingService,
         private readonly occupancyReadingService: OccupancyReadingService,
+        private readonly webSocketService: WebSocketService,
         @Inject("MQTT_SERVICE") private client: ClientProxy
     ) {
         this.loggerService = new LoggerService(MQTTService.name);
@@ -97,22 +99,130 @@ export class MQTTService {
                 room: room,
             });
 
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                    iotDevice: iotDevice,
+                })}`,
+                addedContext: this.subscribeIoTDevice.name,
+            });
+
             await Promise.all([
-                this.temperatureReadingService.add({
-                    iotDeviceId: iotDevice.id,
-                    temperature: temperature,
-                }),
+                this.temperatureReadingService
+                    .add({
+                        iotDeviceId: iotDevice.id,
+                        temperature: temperature,
+                    })
+                    .then((model: TemperatureReading): void => {
+                        this.loggerService.debug({
+                            message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                                model: model,
+                            })}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
 
-                this.humidityReadingService.add({
-                    iotDeviceId: iotDevice.id,
-                    humidity: humidity,
-                }),
+                        const eventName: string = `iot-device/${agency}/${floor}/${room}/temperature`;
 
-                this.occupancyReadingService.add({
-                    iotDeviceId: iotDevice.id,
-                    occupancy: occupancy,
-                }),
+                        this.loggerService.debug({
+                            message: `Emitting event: ${eventName}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+
+                        this.webSocketService.server.emit(eventName, {
+                            data: {
+                                temperature: model.temperature,
+                            },
+                        });
+
+                        this.loggerService.debug({
+                            message: `Emitted Event: ${eventName}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+                    }),
+
+                this.humidityReadingService
+                    .add({
+                        iotDeviceId: iotDevice.id,
+                        humidity: humidity,
+                    })
+                    .then((model: HumidityReading): void => {
+                        this.loggerService.debug({
+                            message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                                model: model,
+                            })}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+
+                        const eventName: string = `iot-device/${agency}/${floor}/${room}/humidity`;
+
+                        this.loggerService.debug({
+                            message: `Emitting event: ${eventName}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+
+                        this.webSocketService.server.emit(eventName, {
+                            data: {
+                                humidity: model.humidity,
+                            },
+                        });
+
+                        this.loggerService.debug({
+                            message: `Emitted Event: ${eventName}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+                    }),
+
+                this.occupancyReadingService
+                    .add({
+                        iotDeviceId: iotDevice.id,
+                        occupancy: occupancy,
+                    })
+                    .then((model: OccupancyReading): void => {
+                        this.loggerService.debug({
+                            message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                                model: model,
+                            })}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+
+                        const eventName = `iot-device/${agency}/${floor}/${room}/occupancy`;
+
+                        this.loggerService.debug({
+                            message: `Emitting Event: ${eventName}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+
+                        this.webSocketService.server.emit(eventName, {
+                            data: {
+                                occupancy: model.occupancy,
+                            },
+                        });
+
+                        this.loggerService.debug({
+                            message: `Emitted Event: ${eventName}`,
+                            addedContext: this.subscribeIoTDevice.name,
+                        });
+                    }),
             ]);
+
+            const combinedEventName: string = `iot-device/${agency}/${floor}/${room}`;
+
+            this.loggerService.debug({
+                message: `Emitting Event: ${combinedEventName}`,
+                addedContext: this.subscribeIoTDevice.name,
+            });
+
+            this.webSocketService.server.emit(combinedEventName, {
+                data: {
+                    temperature: temperature,
+                    humidity: humidity,
+                    occupancy: occupancy,
+                },
+            });
+
+            this.loggerService.debug({
+                message: `Emitted Event: ${combinedEventName}`,
+                addedContext: this.subscribeIoTDevice.name,
+            });
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,

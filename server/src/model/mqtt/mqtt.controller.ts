@@ -89,6 +89,7 @@ export class MQTTController {
             });
 
             const data: IoTDevicePayload = JSON.parse(payload);
+
             await this.mqttService.subscribeIoTDevice({
                 agency: data.agency,
                 floor: data.floor,
