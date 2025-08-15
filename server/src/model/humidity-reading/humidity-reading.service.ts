@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { HumidityReading, IoTDevice } from "@prisma/client";
+import { HumidityReading } from "@prisma/client";
 
 import { MESSAGE } from "@/common/constant/message";
 
@@ -21,17 +21,7 @@ export class HumidityReadingService {
         this.loggerService = new LoggerService(HumidityReadingService.name);
     }
 
-    public async add({
-        agency,
-        floor,
-        room,
-        humidity,
-    }: {
-        agency: string;
-        floor: string;
-        room: string;
-        humidity: number;
-    }): Promise<HumidityReading> {
+    public async add({ iotDeviceId, humidity }: { iotDeviceId: string; humidity: number }): Promise<HumidityReading> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
@@ -40,30 +30,21 @@ export class HumidityReadingService {
 
             this.loggerService.debug({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
-                    agency: agency,
-                    floor: floor,
-                    room: room,
+                    iotDeviceId: iotDeviceId,
                     humidity: humidity,
                 })}`,
                 addedContext: this.add.name,
             });
 
-            const iotDevice: IoTDevice = await this.iotDeviceService.findOrCreate({
-                agency: agency,
-                floor: floor,
-                room: room,
-            });
-
             const model: HumidityReading = await this.prisma.humidityReading.create({
                 data: {
-                    iotDeviceId: iotDevice.id,
+                    iotDeviceId: iotDeviceId,
                     humidity: humidity,
                 },
             });
 
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
-                    iotDevice: iotDevice,
                     model: model,
                 })}`,
                 addedContext: this.add.name,

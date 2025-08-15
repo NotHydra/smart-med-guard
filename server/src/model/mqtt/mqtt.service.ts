@@ -1,5 +1,6 @@
 import { Inject, Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
+import { IoTDevice } from "@prisma/client";
 
 import { MESSAGE } from "@/common/constant/message";
 
@@ -7,6 +8,7 @@ import { LoggerService } from "@/provider/logger.service";
 import { UtilityService } from "@/provider/utility.service";
 
 import { HumidityReadingService } from "@/model/humidity-reading/humidity-reading.service";
+import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
 import { OccupancyReadingService } from "@/model/occupancy-reading/occupancy-reading.service";
 import { TemperatureReadingService } from "@/model/temperature-reading/temperature-reading.service";
 
@@ -16,6 +18,7 @@ export class MQTTService {
 
     constructor(
         private readonly utilityService: UtilityService,
+        private readonly iotDeviceService: IoTDeviceService,
         private readonly temperatureReadingService: TemperatureReadingService,
         private readonly humidityReadingService: HumidityReadingService,
         private readonly occupancyReadingService: OccupancyReadingService,
@@ -55,21 +58,25 @@ export class MQTTService {
         }
     }
 
-    public async subscribeIoTDeviceTemperature({
+    public async subscribeIoTDevice({
         agency,
         floor,
         room,
         temperature,
+        humidity,
+        occupancy,
     }: {
         agency: string;
         floor: string;
         room: string;
         temperature: number;
+        humidity: number;
+        occupancy: boolean;
     }): Promise<void> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.subscribeIoTDeviceTemperature.name,
+                addedContext: this.subscribeIoTDevice.name,
             });
 
             this.loggerService.debug({
@@ -78,106 +85,38 @@ export class MQTTService {
                     floor: floor,
                     room: room,
                     temperature: temperature,
-                })}`,
-                addedContext: this.subscribeIoTDeviceTemperature.name,
-            });
-
-            await this.temperatureReadingService.add({
-                agency: agency,
-                floor: floor,
-                room: room,
-                temperature: temperature,
-            });
-        } catch (error) {
-            this.loggerService.error({
-                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.subscribeIoTDeviceTemperature.name,
-            });
-
-            throw error;
-        }
-    }
-
-    public async subscribeIoTDeviceHumidity({
-        agency,
-        floor,
-        room,
-        humidity,
-    }: {
-        agency: string;
-        floor: string;
-        room: string;
-        humidity: number;
-    }): Promise<void> {
-        try {
-            this.loggerService.log({
-                message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.subscribeIoTDeviceHumidity.name,
-            });
-
-            this.loggerService.debug({
-                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
-                    agency: agency,
-                    floor: floor,
-                    room: room,
                     humidity: humidity,
-                })}`,
-                addedContext: this.subscribeIoTDeviceHumidity.name,
-            });
-
-            await this.humidityReadingService.add({
-                agency: agency,
-                floor: floor,
-                room: room,
-                humidity: humidity,
-            });
-        } catch (error) {
-            this.loggerService.error({
-                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.subscribeIoTDeviceHumidity.name,
-            });
-
-            throw error;
-        }
-    }
-
-    public async subscribeIoTDeviceOccupancy({
-        agency,
-        floor,
-        room,
-        occupancy,
-    }: {
-        agency: string;
-        floor: string;
-        room: string;
-        occupancy: boolean;
-    }): Promise<void> {
-        try {
-            this.loggerService.log({
-                message: `${MESSAGE.GENERAL.START}`,
-                addedContext: this.subscribeIoTDeviceOccupancy.name,
-            });
-
-            this.loggerService.debug({
-                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
-                    agency: agency,
-                    floor: floor,
-                    room: room,
                     occupancy: occupancy,
                 })}`,
-                addedContext: this.subscribeIoTDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDevice.name,
             });
 
-            await this.occupancyReadingService.add({
+            const iotDevice: IoTDevice = await this.iotDeviceService.findOrCreate({
                 agency: agency,
                 floor: floor,
                 room: room,
-                occupancy: occupancy,
             });
+
+            await Promise.all([
+                this.temperatureReadingService.add({
+                    iotDeviceId: iotDevice.id,
+                    temperature: temperature,
+                }),
+
+                this.humidityReadingService.add({
+                    iotDeviceId: iotDevice.id,
+                    humidity: humidity,
+                }),
+
+                this.occupancyReadingService.add({
+                    iotDeviceId: iotDevice.id,
+                    occupancy: occupancy,
+                }),
+            ]);
         } catch (error) {
             this.loggerService.error({
                 message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
-                addedContext: this.subscribeIoTDeviceOccupancy.name,
+                addedContext: this.subscribeIoTDevice.name,
             });
 
             throw error;
