@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { IoTDevice, Prisma } from "@prisma/client";
 
 import { MESSAGE } from "@/common/constant/message";
@@ -16,6 +16,78 @@ export class IoTDeviceService {
         private readonly prisma: PrismaService
     ) {
         this.loggerService = new LoggerService(IoTDeviceService.name);
+    }
+
+    public async findUniqueWithLatestAndPreviousData({ where }: { where: Prisma.IoTDeviceWhereUniqueInput }) {
+        try {
+            this.loggerService.log({
+                message: MESSAGE.GENERAL.START,
+                addedContext: this.findUniqueWithLatestAndPreviousData.name,
+            });
+
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    where: where,
+                })}`,
+                addedContext: this.findUniqueWithLatestAndPreviousData.name,
+            });
+
+            const model = await this.prisma.ioTDevice.findUnique({
+                where: where,
+                select: {
+                    temperatureReadings: {
+                        select: {
+                            temperature: true,
+                            timestamp: true,
+                        },
+                        take: 50,
+                        orderBy: {
+                            timestamp: "desc",
+                        },
+                    },
+                    humidityReadings: {
+                        select: {
+                            humidity: true,
+                            timestamp: true,
+                        },
+                        take: 50,
+                        orderBy: {
+                            timestamp: "desc",
+                        },
+                    },
+                    occupancyReadings: {
+                        select: {
+                            occupancy: true,
+                        },
+                        take: 1,
+                    },
+                },
+            });
+
+            if (model === null) {
+                throw new NotFoundException("Model Not Found");
+            }
+
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                    model: model,
+                })}`,
+                addedContext: this.findUniqueWithLatestAndPreviousData.name,
+            });
+
+            return model;
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.findUniqueWithLatestAndPreviousData.name,
+            });
+
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+
+            throw new InternalServerErrorException("Internal Server Error");
+        }
     }
 
     public async findOrCreate({
