@@ -1,6 +1,6 @@
 import { Inject, Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { HumidityReading, IoTDevice, OccupancyReading, TemperatureReading } from "@prisma/client";
+import { IoTDevice } from "@prisma/client";
 
 import { MESSAGE } from "@/common/constant/message";
 
@@ -107,120 +107,37 @@ export class MQTTService {
             });
 
             await Promise.all([
-                this.temperatureReadingService
-                    .add({
-                        iotDeviceId: iotDevice.id,
-                        temperature: temperature,
-                    })
-                    .then((model: TemperatureReading): void => {
-                        this.loggerService.debug({
-                            message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
-                                model: model,
-                            })}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
+                this.temperatureReadingService.add({
+                    iotDeviceId: iotDevice.id,
+                    temperature: temperature,
+                }),
 
-                        const eventName: string = `iot-device/${agency}/${floor}/${room}/temperature`;
+                this.humidityReadingService.add({
+                    iotDeviceId: iotDevice.id,
+                    humidity: humidity,
+                }),
 
-                        this.loggerService.debug({
-                            message: `Emitting event: ${eventName}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-
-                        this.webSocketService.server.emit(eventName, {
-                            data: {
-                                temperature: model.temperature,
-                            },
-                        });
-
-                        this.loggerService.debug({
-                            message: `Emitted Event: ${eventName}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-                    }),
-
-                this.humidityReadingService
-                    .add({
-                        iotDeviceId: iotDevice.id,
-                        humidity: humidity,
-                    })
-                    .then((model: HumidityReading): void => {
-                        this.loggerService.debug({
-                            message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
-                                model: model,
-                            })}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-
-                        const eventName: string = `iot-device/${agency}/${floor}/${room}/humidity`;
-
-                        this.loggerService.debug({
-                            message: `Emitting event: ${eventName}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-
-                        this.webSocketService.server.emit(eventName, {
-                            data: {
-                                humidity: model.humidity,
-                            },
-                        });
-
-                        this.loggerService.debug({
-                            message: `Emitted Event: ${eventName}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-                    }),
-
-                this.occupancyReadingService
-                    .add({
-                        iotDeviceId: iotDevice.id,
-                        occupancy: occupancy,
-                    })
-                    .then((model: OccupancyReading): void => {
-                        this.loggerService.debug({
-                            message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
-                                model: model,
-                            })}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-
-                        const eventName = `iot-device/${agency}/${floor}/${room}/occupancy`;
-
-                        this.loggerService.debug({
-                            message: `Emitting Event: ${eventName}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-
-                        this.webSocketService.server.emit(eventName, {
-                            data: {
-                                occupancy: model.occupancy,
-                            },
-                        });
-
-                        this.loggerService.debug({
-                            message: `Emitted Event: ${eventName}`,
-                            addedContext: this.subscribeIoTDevice.name,
-                        });
-                    }),
+                this.occupancyReadingService.add({
+                    iotDeviceId: iotDevice.id,
+                    occupancy: occupancy,
+                }),
             ]);
 
-            const combinedEventName: string = `iot-device/${agency}/${floor}/${room}`;
+            const topic: string = `iot-device-${iotDevice.id}`;
 
             this.loggerService.debug({
-                message: `Emitting Event: ${combinedEventName}`,
+                message: `Emit (${topic}/new): Start`,
                 addedContext: this.subscribeIoTDevice.name,
             });
 
-            this.webSocketService.server.emit(combinedEventName, {
-                data: {
-                    temperature: temperature,
-                    humidity: humidity,
-                    occupancy: occupancy,
-                },
+            this.webSocketService.server.to(topic).emit("new", {
+                temperature: temperature,
+                humidity: humidity,
+                occupancy: occupancy,
             });
 
             this.loggerService.debug({
-                message: `Emitted Event: ${combinedEventName}`,
+                message: `Emit (${topic}/new): Finished`,
                 addedContext: this.subscribeIoTDevice.name,
             });
         } catch (error) {
