@@ -19,113 +19,111 @@ if (MQTT_PORT === undefined) {
 const BROKER_ADDRESS: string = `mqtt://${MQTT_HOST}:${MQTT_PORT}`;
 const IOT_DEVICES: IoTDeviceConfig[] = [
     {
-        agency: "pertamina_hospital",
+        agency: "Pertamina Hospital",
         floor: "1",
-        room: "melati_001",
+        room: "Melati 001",
     },
     {
-        agency: "pertamina_hospital",
+        agency: "Pertamina Hospital",
         floor: "1",
-        room: "melati_002",
+        room: "Melati 002",
     },
     {
-        agency: "pertamina_hospital",
+        agency: "Pertamina Hospital",
         floor: "1",
-        room: "melati_003",
+        room: "Melati 003",
     },
     {
-        agency: "pertamina_hospital",
+        agency: "Pertamina Hospital",
         floor: "2",
-        room: "anggrek_001",
+        room: "Anggrek 001",
     },
     {
-        agency: "pertamina_hospital",
+        agency: "Pertamina Hospital",
         floor: "2",
-        room: "anggrek_002",
+        room: "Anggrek 002",
     },
     {
-        agency: "pertamina_hospital",
+        agency: "Pertamina Hospital",
         floor: "3",
-        room: "tulip_001",
+        room: "Tulip 001",
     },
     {
-        agency: "kanojoso_hospital",
+        agency: "Kanojoso Hospital",
         floor: "1",
-        room: "dahlia_001",
+        room: "Dahlia 001",
     },
     {
-        agency: "kanojoso_hospital",
+        agency: "Kanojoso Hospital",
         floor: "1",
-        room: "dahlia_002",
+        room: "Dahlia 002",
     },
     {
-        agency: "kanojoso_hospital",
+        agency: "Kanojoso Hospital",
         floor: "2",
-        room: "mawar_001",
+        room: "Mawar 001",
     },
     {
-        agency: "kanojoso_hospital",
+        agency: "Kanojoso Hospital",
         floor: "2",
-        room: "mawar_002",
+        room: "Mawar 002",
     },
     {
-        agency: "kanojoso_hospital",
+        agency: "Kanojoso Hospital",
         floor: "2",
-        room: "mawar_003",
+        room: "Mawar 003",
     },
     {
-        agency: "kanojoso_hospital",
+        agency: "Kanojoso Hospital",
         floor: "3",
-        room: "sakura_001",
+        room: "Sakura 001",
     },
     {
-        agency: "siloam_hospital",
+        agency: "Siloam Hospital",
         floor: "1",
-        room: "kenanga_001",
+        room: "Kenanga 001",
     },
     {
-        agency: "siloam_hospital",
+        agency: "Siloam Hospital",
         floor: "1",
-        room: "kenanga_002",
+        room: "Kenanga 002",
     },
     {
-        agency: "siloam_hospital",
+        agency: "Siloam Hospital",
         floor: "2",
-        room: "teratai_001",
+        room: "Teratai 001",
     },
     {
-        agency: "siloam_hospital",
+        agency: "Siloam Hospital",
         floor: "2",
-        room: "teratai_002",
+        room: "Teratai 002",
     },
     {
-        agency: "rs_budi_kemuliaan",
+        agency: "RS Budi Kemuliaan",
         floor: "1",
-        room: "seruni_001",
+        room: "Seruni 001",
     },
     {
-        agency: "rs_budi_kemuliaan",
+        agency: "RS Budi Kemuliaan",
         floor: "1",
-        room: "seruni_002",
+        room: "Seruni 002",
     },
     {
-        agency: "rs_budi_kemuliaan",
+        agency: "RS Budi Kemuliaan",
         floor: "2",
-        room: "kamboja_001",
+        room: "Kamboja 001",
     },
     {
-        agency: "rs_budi_kemuliaan",
+        agency: "RS Budi Kemuliaan",
         floor: "2",
-        room: "kamboja_002",
+        room: "Kamboja 002",
     },
 ];
 
 function simulateIoTDevice(iotDeviceConfig: IoTDeviceConfig): void {
     const { agency, floor, room }: IoTDeviceConfig = iotDeviceConfig;
     const name: string = `${agency}-${floor}-${room}`;
-    const temperatureTopic: string = `iot-device/${agency}/${floor}/${room}/temperature`;
-    const humidityTopic: string = `iot-device/${agency}/${floor}/${room}/humidity`;
-    const occupancyTopic: string = `iot-device/${agency}/${floor}/${room}/occupancy`;
+    const topic: string = `iot-device/${agency}/${floor}/${room}`;
 
     console.log(`Starting IoT device for ${name}...`);
 
@@ -135,10 +133,7 @@ function simulateIoTDevice(iotDeviceConfig: IoTDeviceConfig): void {
         clean: true,
     };
 
-    console.log(`Publishing to topics:`);
-    console.log(`- Temperature  : ${temperatureTopic}`);
-    console.log(`- Humidity     : ${humidityTopic}`);
-    console.log(`- Occupancy    : ${occupancyTopic}`);
+    console.log(`Publishing to topic: ${topic}`);
 
     const client: MqttClient = mqtt.connect(BROKER_ADDRESS, options);
 
@@ -150,30 +145,25 @@ function simulateIoTDevice(iotDeviceConfig: IoTDeviceConfig): void {
                 console.log(`📡 Publishing data for ${name}...`);
 
                 const temperature: number = parseFloat((Math.random() * (28.0 - 20.0) + 20.0).toFixed(2));
-                const humidity: number = parseFloat((Math.random() * (65.0 - 40.0) + 40.0).toFixed(2));
-                const occupancy: boolean = Math.random() < 0.5;
-
                 console.log(`Temperature: ${temperature}°C`);
-                client.publish(
-                    temperatureTopic,
-                    JSON.stringify({
-                        data: temperature,
-                    })
-                );
 
+                const humidity: number = parseFloat((Math.random() * (65.0 - 40.0) + 40.0).toFixed(2));
                 console.log(`Humidity: ${humidity}%`);
-                client.publish(
-                    humidityTopic,
-                    JSON.stringify({
-                        data: humidity,
-                    })
-                );
 
+                const occupancy: boolean = Math.random() < 0.5;
                 console.log(`Occupancy: ${occupancy ? "Occupied" : "Unoccupied"}`);
+
                 client.publish(
-                    occupancyTopic,
+                    topic,
                     JSON.stringify({
-                        data: occupancy,
+                        data: JSON.stringify({
+                            agency: agency,
+                            floor: floor,
+                            room: room,
+                            temperature: temperature,
+                            humidity: humidity,
+                            occupancy: occupancy,
+                        }),
                     })
                 );
             } catch (error) {
@@ -204,7 +194,7 @@ function main(): void {
     IOT_DEVICES.forEach((iotDevice: IoTDeviceConfig, index: number): void => {
         setTimeout((): void => {
             simulateIoTDevice(iotDevice);
-        }, index * 1000);
+        }, ((index - 1) / 10) * 2.5 * 1000);
     });
 
     process.on("SIGINT", (): void => {
