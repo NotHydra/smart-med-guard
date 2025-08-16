@@ -1,6 +1,6 @@
 export interface IoTDeviceInterface {
     id: string;
     agency: string;
-    floor: string;
+    floor: number;
     room: string;
 }

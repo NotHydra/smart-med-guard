@@ -7,6 +7,8 @@ import { IoTDeviceInterface } from '@/common/interface/iot-device.interface';
 
 import { Card, CardContent } from '@/components/ui/card';
 
+import { numberToOrdinal } from '@/utility/number-to-ordinal.utility';
+
 export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }): JSX.Element {
     return (
         <Card className="relative overflow-hidden">
@@ -21,7 +23,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <p className="text-xs text-muted-foreground mt-1">
-                            {iotDevice.agency} • {iotDevice.floor}
+                            {iotDevice.agency} • {numberToOrdinal(iotDevice.floor)} Floor
                         </p>
                     </div>
 
