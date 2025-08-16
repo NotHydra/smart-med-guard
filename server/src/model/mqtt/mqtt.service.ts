@@ -69,7 +69,7 @@ export class MQTTService {
         occupancy,
     }: {
         agency: string;
-        floor: string;
+        floor: number;
         room: string;
         temperature: number;
         humidity: number;

@@ -1,6 +1,6 @@
 export interface IoTDevicePayload {
     agency: string;
-    floor: string;
+    floor: number;
     room: string;
     temperature: number;
     humidity: number;
@@ -10,6 +10,6 @@ export interface IoTDevicePayload {
 export interface AvailableIoTDevice {
     id: string;
     agency: string;
-    floor: string;
+    floor: number;
     room: string;
 }

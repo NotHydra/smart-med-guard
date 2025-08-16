@@ -2,7 +2,7 @@ import mqtt, { IClientOptions, MqttClient } from "mqtt";
 
 interface IoTDeviceConfig {
     agency: string;
-    floor: string;
+    floor: number;
     room: string;
 }
 
@@ -20,102 +20,102 @@ const BROKER_ADDRESS: string = `mqtt://${MQTT_HOST}:${MQTT_PORT}`;
 const IOT_DEVICES: IoTDeviceConfig[] = [
     {
         agency: "Pertamina Hospital",
-        floor: "1",
+        floor: 1,
         room: "Melati 001",
     },
     {
         agency: "Pertamina Hospital",
-        floor: "1",
+        floor: 1,
         room: "Melati 002",
     },
     {
         agency: "Pertamina Hospital",
-        floor: "1",
+        floor: 1,
         room: "Melati 003",
     },
     {
         agency: "Pertamina Hospital",
-        floor: "2",
+        floor: 2,
         room: "Anggrek 001",
     },
     {
         agency: "Pertamina Hospital",
-        floor: "2",
+        floor: 2,
         room: "Anggrek 002",
     },
     {
         agency: "Pertamina Hospital",
-        floor: "3",
+        floor: 3,
         room: "Tulip 001",
     },
     {
         agency: "Kanojoso Hospital",
-        floor: "1",
+        floor: 1,
         room: "Dahlia 001",
     },
     {
         agency: "Kanojoso Hospital",
-        floor: "1",
+        floor: 1,
         room: "Dahlia 002",
     },
     {
         agency: "Kanojoso Hospital",
-        floor: "2",
+        floor: 2,
         room: "Mawar 001",
     },
     {
         agency: "Kanojoso Hospital",
-        floor: "2",
+        floor: 2,
         room: "Mawar 002",
     },
     {
         agency: "Kanojoso Hospital",
-        floor: "2",
+        floor: 2,
         room: "Mawar 003",
     },
     {
         agency: "Kanojoso Hospital",
-        floor: "3",
+        floor: 3,
         room: "Sakura 001",
     },
     {
         agency: "Siloam Hospital",
-        floor: "1",
+        floor: 1,
         room: "Kenanga 001",
     },
     {
         agency: "Siloam Hospital",
-        floor: "1",
+        floor: 1,
         room: "Kenanga 002",
     },
     {
         agency: "Siloam Hospital",
-        floor: "2",
+        floor: 2,
         room: "Teratai 001",
     },
     {
         agency: "Siloam Hospital",
-        floor: "2",
+        floor: 2,
         room: "Teratai 002",
     },
     {
         agency: "RS Budi Kemuliaan",
-        floor: "1",
+        floor: 1,
         room: "Seruni 001",
     },
     {
         agency: "RS Budi Kemuliaan",
-        floor: "1",
+        floor: 1,
         room: "Seruni 002",
     },
     {
         agency: "RS Budi Kemuliaan",
-        floor: "2",
+        floor: 2,
         room: "Kamboja 001",
     },
     {
         agency: "RS Budi Kemuliaan",
-        floor: "2",
+        floor: 2,
         room: "Kamboja 002",
     },
 ];

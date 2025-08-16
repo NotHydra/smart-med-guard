@@ -132,7 +132,7 @@ export class IoTDeviceService {
         room,
     }: {
         agency: string;
-        floor: string;
+        floor: number;
         room: string;
     }): Promise<IoTDevice> {
         try {
