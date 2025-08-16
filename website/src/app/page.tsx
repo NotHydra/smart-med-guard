@@ -1,27 +1,40 @@
 'use client';
-import { AlertCircle, Droplets, Stethoscope, Thermometer, User, Wifi } from 'lucide-react';
+
+import axios, { AxiosResponse } from 'axios';
+import { Stethoscope } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { IoTDeviceInterface } from '@/common/interface/iot-device.interface';
+import { ResponseFormatInterface } from '@/common/interface/response-format.interface';
 
 import { Header } from '@/components/header';
 import { IoTDeviceCard } from '@/components/iot-device-card';
-import { KeyMetricCard } from '@/components/key-metric-card';
 import { Sidebar } from '@/components/sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
-    const iotDevices = [
-        {
-            id: 'cmecl1ysi07yqo50y5nhd0wto',
-            agency: 'Pertamina Hospital',
-            floor: '1st Floor',
-            room: 'Melati 001',
-        },
-        {
-            id: 'cm1234ysi07yqo50y5nhd0wto',
-            agency: 'Pertamina Hospital',
-            floor: '1st Floor',
-            room: 'Melati 001',
-        },
-    ];
+    const apiURL: string = 'http://localhost:3001/api/iot-device/find/available';
+    const [iotDevices, setIoTDevices] = useState<IoTDeviceInterface[]>([]);
+
+    useEffect((): void => {
+        const fetchData = async (): Promise<void> => {
+            try {
+                const response: AxiosResponse<ResponseFormatInterface<IoTDeviceInterface[]>> = await axios.get(apiURL, {
+                    headers: {
+                        'X-API-Key': '',
+                    },
+                });
+
+                console.log(response);
+
+                setIoTDevices(response.data.data);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[160px_1fr] lg:grid-cols-[220px_1fr]">
@@ -31,7 +44,7 @@ export default function Home() {
                 <Header />
 
                 <main className="flex flex-1 flex-col gap-4 p-4 md:p-8">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <KeyMetricCard title="Active Devices" icon={<Wifi className="h-4 w-4 text-green-600" />} value={'18'} />
 
                         <KeyMetricCard title="Offline Devices" icon={<AlertCircle className="h-4 w-4 text-red-600" />} value={'2'} />
@@ -45,20 +58,20 @@ export default function Home() {
                         <KeyMetricCard title="Avg Temperature" icon={<Thermometer className="h-4 w-4 text-orange-600" />} value={'43.2 °C'} />
 
                         <KeyMetricCard title="Avg Humidity" icon={<Droplets className="h-4 w-4 text-blue-600" />} value={'45.2%'} />
-                    </div>
+                    </div> */}
 
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Stethoscope className="h-5 w-5 text-blue-600" /> IoT Device Monitoring
-                                <span className="ml-auto text-sm text-muted-foreground">18 of 20 online</span>
+                                {/* <span className="ml-auto text-sm text-muted-foreground">18 of 20 online</span> */}
                             </CardTitle>
                         </CardHeader>
 
                         <CardContent>
                             <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-                                {iotDevices.map((device) => (
-                                    <IoTDeviceCard key={device.id} id={device.id} agency={device.agency} floor={device.floor} room={device.room} />
+                                {iotDevices.map((iotDevice) => (
+                                    <IoTDeviceCard key={iotDevice.id} iotDevice={iotDevice} />
                                 ))}
                             </div>
                         </CardContent>

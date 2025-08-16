@@ -3,9 +3,11 @@
 import { Clock, Droplets, Thermometer, User, Wifi } from 'lucide-react';
 import { JSX } from 'react';
 
+import { IoTDeviceInterface } from '@/common/interface/iot-device.interface';
+
 import { Card, CardContent } from '@/components/ui/card';
 
-export function IoTDeviceCard({ id, agency, floor, room }: { id: string; agency: string; floor: string; room: string }): JSX.Element {
+export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }): JSX.Element {
     return (
         <Card className="relative overflow-hidden">
             {/* <div className={`absolute top-0 left-0 w-full h-1 ${device.status === 'online' ? 'bg-green-500' : device.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'}`} /> */}
@@ -15,11 +17,11 @@ export function IoTDeviceCard({ id, agency, floor, room }: { id: string; agency:
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-sm">{room}</h3>
+                            <h3 className="font-semibold text-sm">{iotDevice.room}</h3>
                         </div>
 
                         <p className="text-xs text-muted-foreground mt-1">
-                            {agency} • {floor}
+                            {iotDevice.agency} • {iotDevice.floor}
                         </p>
                     </div>
 
