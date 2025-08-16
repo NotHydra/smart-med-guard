@@ -2,7 +2,7 @@
 
 import axios, { AxiosResponse } from 'axios';
 import { Stethoscope } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { JSX, useEffect, useState } from 'react';
 
 import { IoTDeviceInterface } from '@/common/interface/iot-device.interface';
 import { ResponseFormatInterface } from '@/common/interface/response-format.interface';
@@ -64,16 +64,21 @@ export default function Home() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Stethoscope className="h-5 w-5 text-blue-600" /> IoT Device Monitoring
-                                {/* <span className="ml-auto text-sm text-muted-foreground">18 of 20 online</span> */}
                             </CardTitle>
                         </CardHeader>
 
                         <CardContent>
-                            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-                                {iotDevices.map((iotDevice) => (
-                                    <IoTDeviceCard key={iotDevice.id} iotDevice={iotDevice} />
-                                ))}
-                            </div>
+                            {iotDevices.length > 0 ? (
+                                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                                    {iotDevices.map(
+                                        (iotDevice: IoTDeviceInterface): JSX.Element => (
+                                            <IoTDeviceCard key={iotDevice.id} iotDevice={iotDevice} />
+                                        ),
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="text-muted-foreground">No IoT devices found</p>
+                            )}
                         </CardContent>
                     </Card>
                 </main>
