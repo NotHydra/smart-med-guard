@@ -16,80 +16,83 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
     const [data, setData] = useState<IoTDeviceDataReadingInterface>();
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            const socket: Socket = io('http://localhost:3002', {
-                transports: ['websocket'],
-                timeout: 5000,
-                reconnectionAttempts: 5,
-                reconnectionDelay: 1000,
-            });
-
-            socket.on('connect', function () {
-                console.log(`✅ (${iotDevice.id}) Connected to the Socket.IO server! 🚀`);
-                console.log(`🆔 (${iotDevice.id}) Socket ID: ${socket.id}`);
-                console.log(`🔌 (${iotDevice.id}) Transport: ${socket.io.engine.transport.name}`);
-
-                socket.emit('hello', 'Hello from debug client!');
-
-                console.log(`📤 (${iotDevice.id}) Sent hello message to server`);
-
-                setStatus(Status.ONLINE);
-            });
-
-            socket.on('connect_error', function (err) {
-                console.log(`❌ (${iotDevice.id}) Socket.IO connection error:`, err.message);
-                console.log(`🔍 (${iotDevice.id}) Error details:`, err);
-
-                setStatus(Status.OFFLINE);
-            });
-
-            socket.on('disconnect', function (reason) {
-                console.log(`🔌 (${iotDevice.id}) Disconnected from server. Reason: ${reason}`);
-
-                setStatus(Status.OFFLINE);
-            });
-
-            socket.on('reconnect', function (attemptNumber) {
-                console.log(`🔄 (${iotDevice.id}) Reconnected after ${attemptNumber} attempts`);
-
-                setStatus(Status.CONNECTING);
-            });
-
-            socket.on('reconnect_attempt', function (attemptNumber) {
-                console.log(`🔄 (${iotDevice.id}) Reconnection attempt #${attemptNumber}`);
-
-                setStatus(Status.CONNECTING);
-            });
-
-            socket.on('reconnect_error', function (err) {
-                console.log(`❌ (${iotDevice.id}) Reconnection error:`, err.message);
-
-                setStatus(Status.OFFLINE);
-            });
-
-            socket.on('reconnect_failed', function () {
-                console.log(`❌ (${iotDevice.id}) Reconnection failed after all attempts`);
-
-                setStatus(Status.OFFLINE);
-            });
-
-            socket.emit('iot-device-topic-join', iotDevice.id);
-
-            socket.on('new', function (data) {
-                console.log(`📡 (${iotDevice.id}) New data:`, data);
-
-                setData({
-                    temperature: data.temperature,
-                    humidity: data.humidity,
-                    occupancy: data.occupancy,
-                    lastUpdate: new Date(),
+        const timer: NodeJS.Timeout = setTimeout(
+            () => {
+                const socket: Socket = io('http://localhost:3002', {
+                    transports: ['websocket'],
+                    timeout: 5000,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 1000,
                 });
-            });
 
-            socket.on('history', function (data) {
-                console.log(`📜 (${iotDevice.id}) History data:`, data);
-            });
-        }, 500);
+                socket.on('connect', function () {
+                    console.log(`✅ (${iotDevice.id}) Connected to the Socket.IO server! 🚀`);
+                    console.log(`🆔 (${iotDevice.id}) Socket ID: ${socket.id}`);
+                    console.log(`🔌 (${iotDevice.id}) Transport: ${socket.io.engine.transport.name}`);
+
+                    socket.emit('hello', 'Hello from debug client!');
+
+                    console.log(`📤 (${iotDevice.id}) Sent hello message to server`);
+
+                    setStatus(Status.ONLINE);
+                });
+
+                socket.on('connect_error', function (err) {
+                    console.log(`❌ (${iotDevice.id}) Socket.IO connection error:`, err.message);
+                    console.log(`🔍 (${iotDevice.id}) Error details:`, err);
+
+                    setStatus(Status.OFFLINE);
+                });
+
+                socket.on('disconnect', function (reason) {
+                    console.log(`🔌 (${iotDevice.id}) Disconnected from server. Reason: ${reason}`);
+
+                    setStatus(Status.OFFLINE);
+                });
+
+                socket.on('reconnect', function (attemptNumber) {
+                    console.log(`🔄 (${iotDevice.id}) Reconnected after ${attemptNumber} attempts`);
+
+                    setStatus(Status.CONNECTING);
+                });
+
+                socket.on('reconnect_attempt', function (attemptNumber) {
+                    console.log(`🔄 (${iotDevice.id}) Reconnection attempt #${attemptNumber}`);
+
+                    setStatus(Status.CONNECTING);
+                });
+
+                socket.on('reconnect_error', function (err) {
+                    console.log(`❌ (${iotDevice.id}) Reconnection error:`, err.message);
+
+                    setStatus(Status.OFFLINE);
+                });
+
+                socket.on('reconnect_failed', function () {
+                    console.log(`❌ (${iotDevice.id}) Reconnection failed after all attempts`);
+
+                    setStatus(Status.OFFLINE);
+                });
+
+                socket.emit('iot-device-topic-join', iotDevice.id);
+
+                socket.on('new', function (data) {
+                    console.log(`📡 (${iotDevice.id}) New data:`, data);
+
+                    setData({
+                        temperature: data.temperature,
+                        humidity: data.humidity,
+                        occupancy: data.occupancy,
+                        lastUpdate: new Date(),
+                    });
+                });
+
+                socket.on('history', function (data) {
+                    console.log(`📜 (${iotDevice.id}) History data:`, data);
+                });
+            },
+            Math.random() * 3000 + 100,
+        );
 
         return () => clearTimeout(timer);
     }, []);
@@ -153,7 +156,6 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
 
                 <div className="border-t">
                     <p className="text-xs text-muted-foreground flex items-center gap-1 pt-4">
-                        {/* <Clock className="h-3 w-3" /> Last update: {device.lastUpdate} */}
                         <Clock className="h-3 w-3" /> Last Update: {data !== undefined ? data.lastUpdate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' - ' + data.lastUpdate.toLocaleTimeString('en-GB', { hour12: false }) : '-'}
                     </p>
                 </div>
