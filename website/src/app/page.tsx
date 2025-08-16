@@ -13,7 +13,7 @@ import { Sidebar } from '@/components/sidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
-    const apiURL: string = 'http://localhost:3001/api/iot-device/find/available';
+    const apiURL: string = `${process.env.NEXT_PUBLIC_SERVER_URL}/api/iot-device/find/available`;
     const [iotDevices, setIoTDevices] = useState<IoTDeviceInterface[]>([]);
 
     useEffect((): void => {
@@ -21,7 +21,7 @@ export default function Home() {
             try {
                 const response: AxiosResponse<ResponseFormatInterface<IoTDeviceInterface[]>> = await axios.get(apiURL, {
                     headers: {
-                        'X-API-Key': '',
+                        'X-API-Key': process.env.NEXT_PUBLIC_SERVER_API_KEY,
                     },
                 });
 

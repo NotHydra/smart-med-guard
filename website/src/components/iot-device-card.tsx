@@ -18,7 +18,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
     useEffect(() => {
         const timer: NodeJS.Timeout = setTimeout(
             () => {
-                const socket: Socket = io('http://localhost:3002', {
+                const socket: Socket = io(process.env.NEXT_PUBLIC_SERVER_WEBSOCKET_URL, {
                     transports: ['websocket'],
                     timeout: 5000,
                     reconnectionAttempts: 5,
