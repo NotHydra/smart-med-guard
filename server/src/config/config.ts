@@ -8,6 +8,7 @@ export default (): {
     apiKey: string;
     bcryptSaltRounds: number;
     jwtSecret: string;
+    webSocketPort: number;
     mqttHost: string;
     mqttPort: number;
 } => {
@@ -51,6 +52,14 @@ export default (): {
         throw new Error("JWT_SECRET environment variable is not set");
     }
 
+    if (process.env.WEBSOCKET_PORT === undefined) {
+        throw new Error("WEBSOCKET_PORT environment variable is not set");
+    }
+
+    if (parseInt(process.env.WEBSOCKET_PORT) < 0 || parseInt(process.env.WEBSOCKET_PORT) > 65535) {
+        throw new Error("WEBSOCKET_PORT must be between 0 and 65535");
+    }
+
     if (process.env.MQTT_HOST === undefined) {
         throw new Error("MQTT_HOST environment variable is not set");
     }
@@ -77,6 +86,7 @@ export default (): {
         apiKey: process.env.API_KEY,
         bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS),
         jwtSecret: process.env.JWT_SECRET,
+        webSocketPort: parseInt(process.env.WEBSOCKET_PORT),
         mqttHost: process.env.MQTT_HOST,
         mqttPort: parseInt(process.env.MQTT_PORT),
     };

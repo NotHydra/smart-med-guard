@@ -1,4 +1,38 @@
 services:
+    website-development:
+        container_name: smart-med-guard-website-development
+
+        profiles:
+            - development
+
+        build:
+            context: ./website
+            target: development
+
+        env_file:
+            - .env
+
+        environment:
+            - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
+            - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
+            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+
+        ports:
+            - ${WEBSITE_PORT}:${WEBSITE_PORT}
+
+        depends_on:
+            server-development:
+                condition: service_healthy
+
+        volumes:
+            - ./website/src:/app/src:ro
+            - ./website/public:/app/public:ro
+
+        restart: always
+
+        networks:
+            - system-network
+
     server-development:
         container_name: smart-med-guard-server-development
 
@@ -20,12 +54,14 @@ services:
             - API_KEY=${SERVER_API_KEY}
             - BCRYPT_SALT_ROUNDS=${SERVER_BCRYPT_SALT_ROUNDS}
             - JWT_SECRET=${SERVER_JWT_SECRET}
+            - WEBSOCKET_PORT=${SERVER_WEBSOCKET_PORT}
             - MQTT_HOST=${MQTT_HOST}
             - MQTT_PORT=${MQTT_PORT}
             - POSTGRES_URL=${POSTGRES_URL}
 
         ports:
             - ${SERVER_PORT}:${SERVER_PORT}
+            - ${SERVER_WEBSOCKET_PORT}:${SERVER_WEBSOCKET_PORT}
 
         depends_on:
             mqtt-development:
@@ -36,6 +72,45 @@ services:
 
         volumes:
             - ./server/src:/app/src:ro
+
+        restart: always
+
+        networks:
+            - system-network
+
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:${SERVER_PORT}/health || exit 1",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    mqtt-test-development:
+        container_name: smart-med-guard-mqtt-test-development
+
+        profiles:
+            - development
+
+        build:
+            context: ./mqtt-test
+            target: development
+
+        env_file:
+            - .env
+
+        environment:
+            - MQTT_HOST=${MQTT_HOST}
+            - MQTT_PORT=${MQTT_PORT}
+
+        depends_on:
+            server-development:
+                condition: service_healthy
+
+        volumes:
+            - ./mqtt-test/src:/app/src:ro
 
         restart: always
 
@@ -60,6 +135,43 @@ services:
             - ./mqtt/config:/mosquitto/config
             - ./mqtt/data:/mosquitto/data
             - ./mqtt/log:/mosquitto/log
+
+        networks:
+            - system-network
+
+    prisma-studio-development:
+        container_name: smart-med-guard-prisma-studio-development
+
+        profiles:
+            - development
+
+        build:
+            context: ./server
+            target: base
+
+        env_file:
+            - .env
+
+        environment:
+            - POSTGRES_URL=${POSTGRES_URL}
+
+        ports:
+            - ${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}
+
+        depends_on:
+            server-development:
+                condition: service_healthy
+
+        command:
+            [
+                "pnpm",
+                "run",
+                "prisma:studio",
+                "--port",
+                "${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}",
+            ]
+
+        restart: always
 
         networks:
             - system-network

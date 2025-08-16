@@ -11,7 +11,7 @@ import { UserService } from "./user.service";
 
 @Module({
     controllers: [UserController],
-    providers: [ConfigService, BcryptService, UtilityService, PrismaService, UserService],
+    providers: [ConfigService, UtilityService, BcryptService, PrismaService, UserService],
     imports: [],
     exports: [UserService],
 })
