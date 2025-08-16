@@ -7,6 +7,8 @@ import { LoggerService } from "@/provider/logger.service";
 import { PrismaService } from "@/provider/prisma.service";
 import { UtilityService } from "@/provider/utility.service";
 
+import { AvailableIoTDevice } from "./iot-device";
+
 @Injectable()
 export class IoTDeviceService {
     private readonly loggerService: LoggerService;
@@ -16,6 +18,40 @@ export class IoTDeviceService {
         private readonly prisma: PrismaService
     ) {
         this.loggerService = new LoggerService(IoTDeviceService.name);
+    }
+
+    public async findAvailable(): Promise<AvailableIoTDevice[]> {
+        try {
+            this.loggerService.log({
+                message: MESSAGE.GENERAL.START,
+                addedContext: this.findAvailable.name,
+            });
+
+            const models = await this.prisma.ioTDevice.findMany({
+                select: {
+                    id: true,
+                    agency: true,
+                    floor: true,
+                    room: true,
+                },
+            });
+
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                    models: models,
+                })}`,
+                addedContext: this.findAvailable.name,
+            });
+
+            return models;
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.findAvailable.name,
+            });
+
+            throw new InternalServerErrorException("Internal Server Error");
+        }
     }
 
     public async findUniqueWithLatestAndPreviousData({ where }: { where: Prisma.IoTDeviceWhereUniqueInput }) {

@@ -6,3 +6,10 @@ export interface IoTDevicePayload {
     humidity: number;
     occupancy: boolean;
 }
+
+export interface AvailableIoTDevice {
+    id: string;
+    agency: string;
+    floor: string;
+    room: string;
+}
