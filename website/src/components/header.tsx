@@ -9,18 +9,10 @@ export function Header() {
                 <p className="text-sm text-muted-foreground">Real-Time Medical Facility Monitoring</p>
             </div>
 
-            <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1">
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
 
-                    <span className="text-muted-foreground">Connected To Server</span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3 text-muted-foreground" />
-
-                    <span className="text-muted-foreground">{new Date().toLocaleDateString()}</span>
-                </div>
+                <span className="text-muted-foreground">{new Date().toLocaleDateString()}</span>
             </div>
         </header>
     );
