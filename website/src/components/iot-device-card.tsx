@@ -5,7 +5,7 @@ import { JSX, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import { Status } from '@/common/enum/status.enum';
-import { IoTDeviceDataReadingInterface, IoTDeviceInterface } from '@/common/interface/iot-device.interface';
+import { IoTDeviceCurrentValueInterface, IoTDeviceInterface } from '@/common/interface/iot-device.interface';
 
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -13,7 +13,7 @@ import { numberToOrdinal } from '@/utility/number-to-ordinal.utility';
 
 export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }): JSX.Element {
     const [status, setStatus] = useState<Status>(Status.CONNECTING);
-    const [data, setData] = useState<IoTDeviceDataReadingInterface>();
+    const [currentValue, setCurrentValue] = useState<IoTDeviceCurrentValueInterface>();
 
     useEffect(() => {
         const timer: NodeJS.Timeout = setTimeout(
@@ -79,7 +79,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                 socket.on('new', function (data) {
                     console.log(`📡 (${iotDevice.id}) New data:`, data);
 
-                    setData({
+                    setCurrentValue({
                         temperature: data.temperature,
                         humidity: data.humidity,
                         occupancy: data.occupancy,
@@ -125,7 +125,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">{data !== undefined ? `${data.temperature.value} °C` : '-'}</p>
+                            <p className="text-lg font-semibold">{currentValue !== undefined ? `${currentValue.temperature.value} °C` : '-'}</p>
                         </div>
                     </div>
 
@@ -137,7 +137,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">{data !== undefined ? `${data.humidity.value}%` : '-'}</p>
+                            <p className="text-lg font-semibold">{currentValue !== undefined ? `${currentValue.humidity.value}%` : '-'}</p>
                         </div>
                     </div>
 
@@ -149,14 +149,14 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">{data !== undefined ? `${data.occupancy.value ? 1 : 0}/1` : '-'}</p>
+                            <p className="text-lg font-semibold">{currentValue !== undefined ? `${currentValue.occupancy.value ? 1 : 0}/1` : '-'}</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="border-t">
                     <p className="text-xs text-muted-foreground flex items-center gap-1 pt-4">
-                        <Clock className="h-3 w-3" /> Last Update: {data !== undefined ? data.lastUpdate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' - ' + data.lastUpdate.toLocaleTimeString('en-GB', { hour12: false }) : '-'}
+                        <Clock className="h-3 w-3" /> Last Update: {currentValue !== undefined ? currentValue.lastUpdate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' - ' + currentValue.lastUpdate.toLocaleTimeString('en-GB', { hour12: false }) : '-'}
                     </p>
                 </div>
             </CardContent>
