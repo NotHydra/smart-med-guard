@@ -36,7 +36,7 @@ model IoTDevice {
 model TemperatureReading {
   id          String   @id @default(cuid()) @map("id")
   iotDeviceId String   @map("iot_device_id")
-  temperature Float    @map("temperature")
+  value       Float    @map("value")
   timestamp   DateTime @default(now()) @map("timestamp")
 
   iotDevice IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
@@ -47,7 +47,7 @@ model TemperatureReading {
 model HumidityReading {
   id          String   @id @default(cuid()) @map("id")
   iotDeviceId String   @map("iot_device_id")
-  humidity    Float    @map("humidity")
+  value       Float    @map("value")
   timestamp   DateTime @default(now()) @map("timestamp")
 
   iotDevice IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)
@@ -58,7 +58,7 @@ model HumidityReading {
 model OccupancyReading {
   id          String   @id @default(cuid()) @map("id")
   iotDeviceId String   @map("iot_device_id")
-  occupancy   Boolean  @map("occupancy")
+  value       Boolean  @map("value")
   timestamp   DateTime @default(now()) @map("timestamp")
 
   iotDevice IoTDevice @relation(fields: [iotDeviceId], references: [id], onDelete: Cascade)

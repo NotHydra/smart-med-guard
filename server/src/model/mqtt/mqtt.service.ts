@@ -132,15 +132,15 @@ export class MQTTService {
 
             this.webSocketService.server.to(topic).emit("new", {
                 temperature: {
-                    value: temperatureReading.temperature,
+                    value: temperatureReading.value,
                     timestamp: temperatureReading.timestamp,
                 },
                 humidity: {
-                    value: humidityReading.humidity,
+                    value: humidityReading.value,
                     timestamp: humidityReading.timestamp,
                 },
                 occupancy: {
-                    value: occupancyReading.occupancy,
+                    value: occupancyReading.value,
                 },
             });
 

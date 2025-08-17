@@ -5,7 +5,7 @@ export interface IoTDeviceInterface {
     room: string;
 }
 
-export interface IoTDeviceDataReadingInterface {
+export interface IoTDeviceCurrentValueInterface {
     temperature: {
         value: number;
         timestamp: string;
@@ -18,4 +18,16 @@ export interface IoTDeviceDataReadingInterface {
         value: number;
     };
     lastUpdate: Date;
+}
+
+export interface IoTDeviceHistoryInterface {
+    temperature: {
+        value: number;
+        timestamp: string;
+    }[];
+
+    humidity: {
+        value: number;
+        timestamp: string;
+    }[];
 }

@@ -73,27 +73,27 @@ export class IoTDeviceService {
                 select: {
                     temperatureReadings: {
                         select: {
-                            temperature: true,
+                            value: true,
                             timestamp: true,
                         },
-                        take: 50,
+                        take: 10,
                         orderBy: {
                             timestamp: "desc",
                         },
                     },
                     humidityReadings: {
                         select: {
-                            humidity: true,
+                            value: true,
                             timestamp: true,
                         },
-                        take: 50,
+                        take: 10,
                         orderBy: {
                             timestamp: "desc",
                         },
                     },
                     occupancyReadings: {
                         select: {
-                            occupancy: true,
+                            value: true,
                         },
                         take: 1,
                     },

@@ -2,10 +2,11 @@
 
 import { Clock, Droplets, Thermometer, User, Wifi, WifiLow, WifiOff } from 'lucide-react';
 import { JSX, useEffect, useState } from 'react';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { io, Socket } from 'socket.io-client';
 
 import { Status } from '@/common/enum/status.enum';
-import { IoTDeviceDataReadingInterface, IoTDeviceInterface } from '@/common/interface/iot-device.interface';
+import { IoTDeviceCurrentValueInterface, IoTDeviceHistoryInterface, IoTDeviceInterface } from '@/common/interface/iot-device.interface';
 
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -13,7 +14,8 @@ import { numberToOrdinal } from '@/utility/number-to-ordinal.utility';
 
 export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }): JSX.Element {
     const [status, setStatus] = useState<Status>(Status.CONNECTING);
-    const [data, setData] = useState<IoTDeviceDataReadingInterface>();
+    const [currentValue, setCurrentValue] = useState<IoTDeviceCurrentValueInterface>();
+    const [history, setHistory] = useState<IoTDeviceHistoryInterface>();
 
     useEffect(() => {
         const timer: NodeJS.Timeout = setTimeout(
@@ -79,16 +81,31 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                 socket.on('new', function (data) {
                     console.log(`📡 (${iotDevice.id}) New data:`, data);
 
-                    setData({
+                    const newValue: IoTDeviceCurrentValueInterface = {
                         temperature: data.temperature,
                         humidity: data.humidity,
                         occupancy: data.occupancy,
                         lastUpdate: new Date(),
+                    };
+
+                    setCurrentValue((): IoTDeviceCurrentValueInterface => {
+                        setHistory((previousHistory: IoTDeviceHistoryInterface | undefined) => {
+                            if (previousHistory !== undefined && previousHistory !== null) {
+                                return {
+                                    temperature: [newValue.temperature, ...previousHistory.temperature].slice(0, 10),
+                                    humidity: [newValue.humidity, ...previousHistory.humidity].slice(0, 10),
+                                };
+                            }
+                        });
+
+                        return newValue;
                     });
                 });
 
                 socket.on('history', function (data) {
                     console.log(`📜 (${iotDevice.id}) History data:`, data);
+
+                    setHistory(data);
                 });
             },
             Math.random() * 3000 + 100,
@@ -96,6 +113,9 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
 
         return () => clearTimeout(timer);
     }, []);
+
+    console.log(`🔄 (${iotDevice.id}) Current Value:`, currentValue);
+    console.log(`📜 (${iotDevice.id}) History:`, history);
 
     return (
         <Card className="relative overflow-hidden">
@@ -113,7 +133,24 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-1">{status === Status.CONNECTING ? <WifiLow className={`h-4 w-4 text-amber-600`} /> : status === Status.ONLINE ? <Wifi className={`h-4 w-4 text-green-600`} /> : <WifiOff className={`h-4 w-4 text-red-600`} />}</div>
+                    <div className="flex items-center gap-1">
+                        {status === Status.CONNECTING ? (
+                            <>
+                                <span className="text-xs text-amber-600">Connecting</span>
+                                <WifiLow className="h-4 w-4 text-amber-600" />
+                            </>
+                        ) : status === Status.ONLINE ? (
+                            <>
+                                <span className="text-xs text-green-600">Online</span>
+                                <Wifi className="h-4 w-4 text-green-600" />
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-xs text-red-600">Offline</span>
+                                <WifiOff className="h-4 w-4 text-red-600" />
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
@@ -125,7 +162,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">{data !== undefined ? `${data.temperature.value} °C` : '-'}</p>
+                            <p className="text-lg font-semibold">{currentValue !== undefined ? `${currentValue.temperature.value} °C` : '-'}</p>
                         </div>
                     </div>
 
@@ -137,7 +174,7 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">{data !== undefined ? `${data.humidity.value}%` : '-'}</p>
+                            <p className="text-lg font-semibold">{currentValue !== undefined ? `${currentValue.humidity.value}%` : '-'}</p>
                         </div>
                     </div>
 
@@ -149,14 +186,162 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">{data !== undefined ? `${data.occupancy.value ? 1 : 0}/1` : '-'}</p>
+                            <p className="text-lg font-semibold">{currentValue !== undefined ? `${currentValue.occupancy.value ? 1 : 0}/1` : '-'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-1">
+                            <Thermometer className="h-3 w-3 text-orange-600" />
+
+                            <span className="text-xs font-medium text-muted-foreground">Temperature History</span>
+                        </div>
+
+                        <div className="h-24">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                    data={(history !== undefined ? history.temperature.toReversed() : []).map((item) => ({
+                                        value: item.value,
+                                        time: new Date(item.timestamp).toLocaleTimeString('en-GB', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            hour12: false,
+                                        }),
+                                    }))}
+                                    margin={{
+                                        top: 5,
+                                        right: 5,
+                                        left: 5,
+                                        bottom: 5,
+                                    }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+
+                                    <XAxis
+                                        dataKey="time"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fontSize: 10,
+                                            fill: '#6B7280',
+                                        }}
+                                        interval="preserveStartEnd"
+                                    />
+
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fontSize: 10,
+                                            fill: '#6B7280',
+                                        }}
+                                        domain={['dataMin - 1', 'dataMax + 1']}
+                                    />
+
+                                    <Tooltip labelFormatter={(value) => `Time: ${value}`} formatter={(value: number) => [`${value} °C`, 'Temperature']} />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke="#EA580C"
+                                        strokeWidth={2}
+                                        dot={{
+                                            fill: '#EA580C',
+                                            strokeWidth: 0,
+                                            r: 2,
+                                        }}
+                                        activeDot={{
+                                            r: 4,
+                                            stroke: '#EA580C',
+                                            strokeWidth: 2,
+                                            fill: '#FFF',
+                                        }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-1">
+                            <Droplets className="h-3 w-3 text-cyan-600" />
+
+                            <span className="text-xs font-medium text-muted-foreground">Humidity History</span>
+                        </div>
+
+                        <div className="h-24">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                    data={(history !== undefined ? history.humidity.toReversed() : []).map((item) => ({
+                                        value: item.value,
+                                        time: new Date(item.timestamp).toLocaleTimeString('en-GB', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            hour12: false,
+                                        }),
+                                    }))}
+                                    margin={{
+                                        top: 5,
+                                        right: 5,
+                                        left: 5,
+                                        bottom: 5,
+                                    }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+
+                                    <XAxis
+                                        dataKey="time"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fontSize: 10,
+                                            fill: '#6B7280',
+                                        }}
+                                        interval="preserveStartEnd"
+                                    />
+
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fontSize: 10,
+                                            fill: '#6B7280',
+                                        }}
+                                        domain={['dataMin - 1', 'dataMax + 1']}
+                                    />
+
+                                    <Tooltip labelFormatter={(value) => `Time: ${value}`} formatter={(value: number) => [`${value}%`, 'Humidity']} />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke="#0891B2"
+                                        strokeWidth={2}
+                                        dot={{
+                                            fill: '#0891B2',
+                                            strokeWidth: 0,
+                                            r: 2,
+                                        }}
+                                        activeDot={{
+                                            r: 4,
+                                            stroke: '#0891B2',
+                                            strokeWidth: 2,
+                                            fill: '#FFF',
+                                        }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
                 </div>
 
                 <div className="border-t">
                     <p className="text-xs text-muted-foreground flex items-center gap-1 pt-4">
-                        <Clock className="h-3 w-3" /> Last Update: {data !== undefined ? data.lastUpdate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' - ' + data.lastUpdate.toLocaleTimeString('en-GB', { hour12: false }) : '-'}
+                        <Clock className="h-3 w-3" /> Last Update: {currentValue !== undefined ? currentValue.lastUpdate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' - ' + currentValue.lastUpdate.toLocaleTimeString('en-GB', { hour12: false }) : '-'}
                     </p>
                 </div>
             </CardContent>

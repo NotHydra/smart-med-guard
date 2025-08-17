@@ -42,7 +42,7 @@ export class TemperatureReadingService {
             const model: TemperatureReading = await this.prisma.temperatureReading.create({
                 data: {
                     iotDeviceId: iotDeviceId,
-                    temperature: temperature,
+                    value: temperature,
                 },
             });
 
