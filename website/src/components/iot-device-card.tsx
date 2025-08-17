@@ -133,7 +133,24 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-1">{status === Status.CONNECTING ? <WifiLow className={`h-4 w-4 text-amber-600`} /> : status === Status.ONLINE ? <Wifi className={`h-4 w-4 text-green-600`} /> : <WifiOff className={`h-4 w-4 text-red-600`} />}</div>
+                    <div className="flex items-center gap-1">
+                        {status === Status.CONNECTING ? (
+                            <>
+                                <span className="text-xs text-amber-600">Connecting</span>
+                                <WifiLow className="h-4 w-4 text-amber-600" />
+                            </>
+                        ) : status === Status.ONLINE ? (
+                            <>
+                                <span className="text-xs text-green-600">Online</span>
+                                <Wifi className="h-4 w-4 text-green-600" />
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-xs text-red-600">Offline</span>
+                                <WifiOff className="h-4 w-4 text-red-600" />
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
