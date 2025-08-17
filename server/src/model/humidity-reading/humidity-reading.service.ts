@@ -39,7 +39,7 @@ export class HumidityReadingService {
             const model: HumidityReading = await this.prisma.humidityReading.create({
                 data: {
                     iotDeviceId: iotDeviceId,
-                    humidity: humidity,
+                    value: humidity,
                 },
             });
 

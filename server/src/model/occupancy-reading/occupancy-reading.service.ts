@@ -45,7 +45,7 @@ export class OccupancyReadingService {
             const model: OccupancyReading = await this.prisma.occupancyReading.create({
                 data: {
                     iotDeviceId: iotDeviceId,
-                    occupancy: occupancy,
+                    value: occupancy,
                 },
             });
 

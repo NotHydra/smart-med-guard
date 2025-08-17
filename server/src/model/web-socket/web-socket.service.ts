@@ -170,15 +170,15 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
             ) {
                 client.emit("new", {
                     temperature: {
-                        value: iotDevice.temperatureReadings[0].temperature,
+                        value: iotDevice.temperatureReadings[0].value,
                         timestamp: iotDevice.temperatureReadings[0].timestamp,
                     },
                     humidity: {
-                        value: iotDevice.humidityReadings[0].humidity,
+                        value: iotDevice.humidityReadings[0].value,
                         timestamp: iotDevice.humidityReadings[0].timestamp,
                     },
                     occupancy: {
-                        value: iotDevice.occupancyReadings[0].occupancy,
+                        value: iotDevice.occupancyReadings[0].value,
                     },
                 });
             }
