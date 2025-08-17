@@ -185,8 +185,8 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
 
             if (iotDevice.temperatureReadings?.length > 1 && iotDevice.humidityReadings?.length > 1) {
                 client.emit("history", {
-                    temperature: iotDevice.temperatureReadings.slice(1),
-                    humidity: iotDevice.humidityReadings.slice(1),
+                    temperature: iotDevice.temperatureReadings,
+                    humidity: iotDevice.humidityReadings,
                 });
             }
 

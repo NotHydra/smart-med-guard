@@ -76,7 +76,7 @@ export class IoTDeviceService {
                             value: true,
                             timestamp: true,
                         },
-                        take: 50,
+                        take: 10,
                         orderBy: {
                             timestamp: "desc",
                         },
@@ -86,7 +86,7 @@ export class IoTDeviceService {
                             value: true,
                             timestamp: true,
                         },
-                        take: 50,
+                        take: 10,
                         orderBy: {
                             timestamp: "desc",
                         },
