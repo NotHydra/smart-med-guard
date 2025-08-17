@@ -5,7 +5,7 @@ import { JSX, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import { Status } from '@/common/enum/status.enum';
-import { IoTDeviceCurrentValueInterface, IoTDeviceInterface } from '@/common/interface/iot-device.interface';
+import { IoTDeviceCurrentValueInterface, IoTDeviceHistoryInterface, IoTDeviceInterface } from '@/common/interface/iot-device.interface';
 
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -14,6 +14,7 @@ import { numberToOrdinal } from '@/utility/number-to-ordinal.utility';
 export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }): JSX.Element {
     const [status, setStatus] = useState<Status>(Status.CONNECTING);
     const [currentValue, setCurrentValue] = useState<IoTDeviceCurrentValueInterface>();
+    const [history, setHistory] = useState<IoTDeviceHistoryInterface>();
 
     useEffect(() => {
         const timer: NodeJS.Timeout = setTimeout(
@@ -79,16 +80,36 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
                 socket.on('new', function (data) {
                     console.log(`📡 (${iotDevice.id}) New data:`, data);
 
-                    setCurrentValue({
-                        temperature: data.temperature,
-                        humidity: data.humidity,
-                        occupancy: data.occupancy,
-                        lastUpdate: new Date(),
+                    setCurrentValue((prevValue) => {
+                        if (prevValue !== undefined && prevValue !== null) {
+                            setHistory((prevHistory) => {
+                                if (prevHistory !== undefined && prevHistory !== null) {
+                                    return {
+                                        temperature: [prevValue.temperature, ...prevHistory.temperature].slice(-50),
+                                        humidity: [prevValue.humidity, ...prevHistory.humidity].slice(-50),
+                                    };
+                                } else {
+                                    return {
+                                        temperature: [prevValue.temperature],
+                                        humidity: [prevValue.humidity],
+                                    };
+                                }
+                            });
+                        }
+
+                        return {
+                            temperature: data.temperature,
+                            humidity: data.humidity,
+                            occupancy: data.occupancy,
+                            lastUpdate: new Date(),
+                        };
                     });
                 });
 
                 socket.on('history', function (data) {
                     console.log(`📜 (${iotDevice.id}) History data:`, data);
+
+                    setHistory(data);
                 });
             },
             Math.random() * 3000 + 100,
@@ -96,6 +117,9 @@ export function IoTDeviceCard({ iotDevice }: { iotDevice: IoTDeviceInterface }):
 
         return () => clearTimeout(timer);
     }, []);
+
+    console.log(`🔄 (${iotDevice.id}) Current Value:`, currentValue);
+    console.log(`📜 (${iotDevice.id}) History:`, history);
 
     return (
         <Card className="relative overflow-hidden">
