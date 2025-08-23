@@ -1,3 +1,5 @@
+name: smart-med-guard
+
 services:
     website-development:
         container_name: smart-med-guard-website-development
@@ -33,6 +35,36 @@ services:
         networks:
             - system-network
 
+    website-production:
+        container_name: smart-med-guard-website-production
+
+        profiles:
+            - production
+
+        build:
+            context: ./website
+            target: production
+
+        env_file:
+            - .env
+
+        environment:
+            - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
+            - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
+            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+
+        ports:
+            - ${WEBSITE_PORT}:${WEBSITE_PORT}
+
+        depends_on:
+            server-production:
+                condition: service_healthy
+
+        restart: unless-stopped
+
+        networks:
+            - system-network
+
     server-development:
         container_name: smart-med-guard-server-development
 
@@ -48,7 +80,7 @@ services:
 
         environment:
             - LOG_LEVEL=${SERVER_LOG_LEVEL}
-            - ENVIRONMENT=${SERVER_ENVIRONMENT}
+            - ENVIRONMENT=development
             - HOST=${SERVER_HOST}
             - PORT=${SERVER_PORT}
             - API_KEY=${SERVER_API_KEY}
@@ -64,10 +96,10 @@ services:
             - ${SERVER_WEBSOCKET_PORT}:${SERVER_WEBSOCKET_PORT}
 
         depends_on:
-            mqtt-development:
+            mqtt:
                 condition: service_started
 
-            database-development:
+            database:
                 condition: service_healthy
 
         volumes:
@@ -82,7 +114,59 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "curl -f http://localhost:${SERVER_PORT}/health || exit 1",
+                    "wget --header='x-api-key: ${SERVER_UNENCRYPTED_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    server-production:
+        container_name: smart-med-guard-server-production
+
+        profiles:
+            - production
+
+        build:
+            context: ./server
+            target: development
+
+        env_file:
+            - .env
+
+        environment:
+            - LOG_LEVEL=${SERVER_LOG_LEVEL}
+            - ENVIRONMENT=production
+            - HOST=${SERVER_HOST}
+            - PORT=${SERVER_PORT}
+            - API_KEY=${SERVER_API_KEY}
+            - BCRYPT_SALT_ROUNDS=${SERVER_BCRYPT_SALT_ROUNDS}
+            - JWT_SECRET=${SERVER_JWT_SECRET}
+            - WEBSOCKET_PORT=${SERVER_WEBSOCKET_PORT}
+            - MQTT_HOST=${MQTT_HOST}
+            - MQTT_PORT=${MQTT_PORT}
+            - POSTGRES_URL=${POSTGRES_URL}
+
+        ports:
+            - ${SERVER_PORT}:${SERVER_PORT}
+            - ${SERVER_WEBSOCKET_PORT}:${SERVER_WEBSOCKET_PORT}
+
+        depends_on:
+            mqtt:
+                condition: service_started
+
+            database:
+                condition: service_healthy
+
+        restart: unless-stopped
+
+        networks:
+            - system-network
+
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "wget --header='x-api-key: ${SERVER_UNENCRYPTED_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
@@ -117,13 +201,14 @@ services:
         networks:
             - system-network
 
-    mqtt-development:
+    mqtt:
         image: eclipse-mosquitto:latest
 
-        container_name: smart-med-guard-mqtt-development
+        container_name: smart-med-guard-mqtt
 
         profiles:
             - development
+            - production
 
         env_file:
             - .env
@@ -176,13 +261,51 @@ services:
         networks:
             - system-network
 
-    database-development:
+    prisma-studio-production:
+        container_name: smart-med-guard-prisma-studio-production
+
+        profiles:
+            - production
+
+        build:
+            context: ./server
+            target: base
+
+        env_file:
+            - .env
+
+        environment:
+            - POSTGRES_URL=${POSTGRES_URL}
+
+        ports:
+            - ${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}
+
+        depends_on:
+            server-production:
+                condition: service_healthy
+
+        command:
+            [
+                "pnpm",
+                "run",
+                "prisma:studio",
+                "--port",
+                "${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}",
+            ]
+
+        restart: unless-stopped
+
+        networks:
+            - system-network
+
+    database:
         image: postgres:latest
 
-        container_name: smart-med-guard-database-development
+        container_name: smart-med-guard-database
 
         profiles:
             - development
+            - production
 
         env_file:
             - .env
@@ -196,7 +319,7 @@ services:
             - ${POSTGRES_PORT}:${POSTGRES_PORT}
 
         volumes:
-            - smart_med_guard_postgres_development_data:/var/lib/postgresql/data
+            - smart_med_guard_postgres_data:/var/lib/postgresql/data
 
         networks:
             - system-network
@@ -212,7 +335,7 @@ services:
             retries: 5
 
 volumes:
-    smart_med_guard_postgres_development_data:
+    smart_med_guard_postgres_data:
 
 networks:
     system-network:
