@@ -17,7 +17,7 @@ services:
         environment:
             - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
             - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
-            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_API_KEY}
 
         ports:
             - ${WEBSITE_PORT}:${WEBSITE_PORT}
@@ -47,7 +47,7 @@ services:
             args:
                 - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
                 - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
-                - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+                - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_API_KEY}
 
         env_file:
             - .env
@@ -55,7 +55,7 @@ services:
         environment:
             - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
             - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
-            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_API_KEY}
 
         ports:
             - ${WEBSITE_PORT}:${WEBSITE_PORT}
@@ -118,7 +118,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_UNENCRYPTED_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
@@ -170,7 +170,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_UNENCRYPTED_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s

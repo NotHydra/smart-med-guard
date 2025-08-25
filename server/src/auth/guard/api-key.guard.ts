@@ -39,10 +39,7 @@ export class ApiKeyGuard implements CanActivate {
             throw new UnauthorizedException("API Key is missing");
         }
 
-        const result: boolean = await this.bcryptService.compare({
-            plainValue: apiKey,
-            hashedValue: this.configService.getAPIKey(),
-        });
+        const result: boolean = apiKey === this.configService.getAPIKey();
 
         if (result === false) {
             this.loggerService.error({
