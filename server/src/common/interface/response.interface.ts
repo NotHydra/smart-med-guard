@@ -11,3 +11,10 @@ export interface SuccessResponseInterface<T> {
     message: string;
     data: T;
 }
+export interface PaginationResponseInterface<T> {
+    count: number;
+    page: number;
+    lastPage: number;
+    perPage: number;
+    items: T[];
+}

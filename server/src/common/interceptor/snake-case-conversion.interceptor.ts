@@ -9,7 +9,9 @@ import { MESSAGE } from "@/common/constant/message";
 import { LoggerService } from "@/provider/logger.service";
 import { UtilityService } from "@/provider/utility.service";
 
-const toSnakeCase = (obj: any): any => {
+const toSnakeCase = (
+    obj: any //
+): any => {
     if (obj === null || obj === undefined) {
         return obj;
     }
@@ -38,11 +40,16 @@ const toSnakeCase = (obj: any): any => {
 export class SnakeCaseConversionInterceptor implements NestInterceptor {
     private readonly loggerService: LoggerService;
 
-    constructor(private readonly utilityService: UtilityService) {
+    constructor(
+        private readonly utilityService: UtilityService //
+    ) {
         this.loggerService = new LoggerService(SnakeCaseConversionInterceptor.name);
     }
 
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    intercept(
+        context: ExecutionContext, //
+        next: CallHandler
+    ): Observable<any> {
         return next.handle().pipe(
             map((data) => {
                 const formattedResponse: any = toSnakeCase(data);

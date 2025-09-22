@@ -16,8 +16,17 @@ import { JwtStrategy } from "./strategy/jwt.strategy";
 import { LocalStrategy } from "./strategy/local.strategy";
 
 @Module({
-    controllers: [AuthController],
-    providers: [ConfigService, BcryptService, UtilityService, LocalStrategy, JwtStrategy, AuthService],
+    controllers: [
+        AuthController, //
+    ],
+    providers: [
+        ConfigService, //
+        BcryptService,
+        UtilityService,
+        LocalStrategy,
+        JwtStrategy,
+        AuthService,
+    ],
     imports: [
         PassportModule,
         JwtModule.registerAsync({
@@ -30,6 +39,11 @@ import { LocalStrategy } from "./strategy/local.strategy";
         }),
         UserModule,
     ],
-    exports: [PassportModule, LocalStrategy, JwtStrategy, AuthService],
+    exports: [
+        PassportModule, //
+        LocalStrategy,
+        JwtStrategy,
+        AuthService,
+    ],
 })
 export class AuthModule {}

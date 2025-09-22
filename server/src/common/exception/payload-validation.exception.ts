@@ -5,7 +5,9 @@ import { PayloadValidationExceptionData } from "@/common/interface/exception.int
 export class PayloadValidationException extends BadRequestException {
     public readonly data: PayloadValidationExceptionData[];
 
-    constructor(data: PayloadValidationExceptionData[]) {
+    constructor(
+        data: PayloadValidationExceptionData[] //
+    ) {
         super("Payload Validation Failed");
 
         this.data = data;

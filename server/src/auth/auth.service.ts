@@ -25,7 +25,13 @@ export class AuthService {
         this.loggerService = new LoggerService(AuthService.name);
     }
 
-    public async validate({ email, password }: { email: string; password: string }): Promise<AuthenticatedUser> {
+    public async validate({
+        email, //
+        password,
+    }: {
+        email: string;
+        password: string;
+    }): Promise<AuthenticatedUser> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -35,7 +41,6 @@ export class AuthService {
             this.loggerService.debug({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     email: email,
-                    password: password,
                 })}`,
                 addedContext: this.validate.name,
             });
@@ -87,7 +92,9 @@ export class AuthService {
         }
     }
 
-    public async login(user: AuthenticatedUser): Promise<JWTAccessToken> {
+    public async login(
+        user: AuthenticatedUser //
+    ): Promise<JWTAccessToken> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,

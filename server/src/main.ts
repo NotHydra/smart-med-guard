@@ -36,11 +36,21 @@ async function bootstrap(): Promise<void> {
     });
 
     app.useLogger(configService.getLogLevel());
-    app.useGlobalGuards(new ApiKeyGuard(configService, bcryptService, utilityService));
-    app.useGlobalFilters(new ControllerExceptionFilter(utilityService));
-    app.useGlobalPipes(new PayloadValidationPipe());
+
+    app.useGlobalGuards(
+        new ApiKeyGuard(configService, bcryptService, utilityService) //
+    );
+
+    app.useGlobalFilters(
+        new ControllerExceptionFilter(utilityService) //
+    );
+
+    app.useGlobalPipes(
+        new PayloadValidationPipe() //
+    );
+
     app.useGlobalInterceptors(
-        new DurationInterceptor(),
+        new DurationInterceptor(), //
         new ResponseFormatInterceptor(utilityService),
         new SnakeCaseConversionInterceptor(utilityService)
     );
@@ -53,7 +63,7 @@ async function bootstrap(): Promise<void> {
     });
 
     await app.startAllMicroservices();
-    await app.listen(configService.getPort(), configService.getHost());
+    await app.listen(configService.getPort(), "0.0.0.0");
 
     Logger.log(`⚙️  Environment: ${utilityService.capitalize(configService.getEnvironment())}`);
     Logger.log(
@@ -62,7 +72,7 @@ async function bootstrap(): Promise<void> {
             .map((level: string) => utilityService.capitalize(level))
             .join(", ")}]`
     );
-    Logger.log(`🚀 Application: ${configService.getBaseURL()}/${globalPrefix}`);
+    Logger.log(`🚀 Application: ${configService.getURL()}/${globalPrefix}`);
 }
 
 bootstrap();

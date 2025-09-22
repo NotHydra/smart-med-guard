@@ -19,7 +19,11 @@ export class BcryptService {
         this.loggerService = new LoggerService(BcryptService.name);
     }
 
-    public async hash({ plainValue }: { plainValue: string }): Promise<string> {
+    public async hash({
+        plainValue, //
+    }: {
+        plainValue: string;
+    }): Promise<string> {
         this.loggerService.verbose({
             message: MESSAGE.GENERAL.START,
             addedContext: this.hash.name,
@@ -40,7 +44,13 @@ export class BcryptService {
         return result;
     }
 
-    public async compare({ plainValue, hashedValue }: { plainValue: string; hashedValue: string }): Promise<boolean> {
+    public async compare({
+        plainValue, //
+        hashedValue,
+    }: {
+        plainValue: string;
+        hashedValue: string;
+    }): Promise<boolean> {
         this.loggerService.verbose({
             message: MESSAGE.GENERAL.START,
             addedContext: this.compare.name,

@@ -11,9 +11,15 @@ import { WebSocketController } from "./web-socket.controller";
 import { WebSocketService } from "./web-socket.service";
 
 @Module({
-    controllers: [WebSocketController],
-    providers: [ConfigService, UtilityService, PrismaService, IoTDeviceService, WebSocketService],
-    imports: [],
-    exports: [],
+    controllers: [
+        WebSocketController, //
+    ],
+    providers: [
+        ConfigService, //
+        UtilityService,
+        PrismaService,
+        IoTDeviceService,
+        WebSocketService,
+    ],
 })
 export class WebSocketModule {}

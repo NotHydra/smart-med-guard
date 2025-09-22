@@ -9,6 +9,9 @@ import { MESSAGE } from "@/common/constant/message";
 import { LoggerService } from "@/provider/logger.service";
 import { UtilityService } from "@/provider/utility.service";
 
+import { UserService } from "@/model/user/user.service";
+
+import { User } from "@prisma/client";
 import { AuthenticatedUser } from "../auth";
 
 interface JWTPayload {
@@ -24,7 +27,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     constructor(
         readonly configService: ConfigService,
-        private readonly utilityService: UtilityService
+        private readonly utilityService: UtilityService,
+        private readonly userService: UserService
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -35,7 +39,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         this.loggerService = new LoggerService(JwtStrategy.name);
     }
 
-    public async validate(payload: JWTPayload): Promise<AuthenticatedUser | undefined> {
+    public async validate(
+        payload: JWTPayload //
+    ): Promise<AuthenticatedUser> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -44,16 +50,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
             this.loggerService.debug({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
-                    payload: payload,
+                    userId: payload.sub,
+                    email: payload.email,
                 })}`,
                 addedContext: this.validate.name,
             });
 
+            const user: User = await this.userService.findUnique({
+                where: {
+                    id: payload.sub,
+                },
+            });
+
             return {
-                id: payload.sub,
-                email: payload.email,
-                createdAt: payload.createdAt,
-                updatedAt: payload.updatedAt,
+                id: user.id,
+                email: user.email,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
             };
         } catch (error) {
             this.loggerService.error({

@@ -1,31 +1,18 @@
-import {
-    Body,
-    Controller,
-    DefaultValuePipe,
-    Delete,
-    Get,
-    HttpStatus,
-    Param,
-    ParseIntPipe,
-    Post,
-    Put,
-    Query,
-    UseGuards,
-} from "@nestjs/common";
+import { Body, Controller, DefaultValuePipe, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, Query } from "@nestjs/common";
 import { User } from "@prisma/client";
 
 import { MESSAGE } from "@/common/constant/message";
 import { SuccessResponseInterface } from "@/common/interface/response.interface";
 
-import { JWTAuthGuard } from "@/auth/guard/jwt-auth.guard";
-
 import { LoggerService } from "@/provider/logger.service";
 import { UtilityService } from "@/provider/utility.service";
 
-import { UserCreateDTO, UserUpdateDTO } from "./user";
+import { OrderDirectionEnum } from "@/common/enum/order-direction.enum";
+import { PaginationResponseInterface } from "@/common/interface/response.interface";
+import { UserCreateDTO, UserOrderByEnum, UserUpdateDTO } from "./user";
 import { UserService } from "./user.service";
 
-@UseGuards(JWTAuthGuard)
+// @UseGuards(JWTAuthGuard)
 @Controller("user")
 export class UserController {
     private readonly loggerService: LoggerService;
@@ -39,9 +26,12 @@ export class UserController {
 
     @Get("find")
     public async find(
-        @Query("page", new DefaultValuePipe(0), ParseIntPipe) page?: number,
-        @Query("count", new DefaultValuePipe(0), ParseIntPipe) count?: number
-    ): Promise<SuccessResponseInterface<User[]>> {
+        @Query("page", new DefaultValuePipe(0), ParseIntPipe) page?: number, //
+        @Query("perPage", new DefaultValuePipe(0), ParseIntPipe) perPage?: number,
+        @Query("search") search?: string,
+        @Query("orderBy") orderBy?: UserOrderByEnum,
+        @Query("orderDirection") orderDirection?: OrderDirectionEnum
+    ): Promise<SuccessResponseInterface<PaginationResponseInterface<User>>> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -51,18 +41,43 @@ export class UserController {
             this.loggerService.debug({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     page: page,
-                    count: count,
+                    perPage: perPage,
+                    search: search,
+                    orderBy: orderBy,
+                    orderDirection: orderDirection,
                 })}`,
                 addedContext: this.find.name,
             });
 
-            return this.utilityService.generateSuccessResponse<User[]>({
+            this.utilityService.validateOrderBy(UserOrderByEnum, orderBy as keyof typeof UserOrderByEnum | undefined);
+            this.utilityService.validateOrderDirection(orderDirection);
+
+            const [count, models] = await Promise.all([
+                this.userService.count({
+                    search: search,
+                }),
+                this.userService.find({
+                    page: page,
+                    perPage: perPage,
+                    search: search,
+                    orderBy: { [orderBy === undefined ? "id" : orderBy]: orderDirection || OrderDirectionEnum.ASC },
+                }),
+            ]);
+
+            const response: PaginationResponseInterface<User> = {
+                count: count,
+                page: page || 0,
+                lastPage: !perPage //
+                    ? 0
+                    : Math.ceil(count / perPage),
+                perPage: perPage || 0,
+                items: models,
+            };
+
+            return this.utilityService.generateSuccessResponse<PaginationResponseInterface<User>>({
                 status: HttpStatus.OK,
                 message: MESSAGE.GENERAL.FIND,
-                data: await this.userService.find({
-                    page: page,
-                    count: count,
-                }),
+                data: response,
             });
         } catch (error) {
             this.loggerService.error({
@@ -75,7 +90,9 @@ export class UserController {
     }
 
     @Get("find/id/:id")
-    public async findById(@Param("id") id: string): Promise<SuccessResponseInterface<User>> {
+    public async findById(
+        @Param("id") id: string //
+    ): Promise<SuccessResponseInterface<User>> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -93,7 +110,9 @@ export class UserController {
                 status: HttpStatus.OK,
                 message: MESSAGE.GENERAL.FIND_ONE,
                 data: await this.userService.findUnique({
-                    where: { id: id },
+                    where: {
+                        id: id,
+                    },
                 }),
             });
         } catch (error) {
@@ -107,7 +126,9 @@ export class UserController {
     }
 
     @Post("/add")
-    public async add(@Body() payload: UserCreateDTO): Promise<SuccessResponseInterface<null>> {
+    public async add(
+        @Body() payload: UserCreateDTO //
+    ): Promise<SuccessResponseInterface<null>> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -142,7 +163,7 @@ export class UserController {
 
     @Put("change/id/:id")
     public async changeById(
-        @Param("id") id: string,
+        @Param("id") id: string, //
         @Body() payload: UserUpdateDTO
     ): Promise<SuccessResponseInterface<null>> {
         try {
@@ -160,7 +181,9 @@ export class UserController {
             });
 
             await this.userService.change({
-                where: { id: id },
+                where: {
+                    id: id,
+                },
                 data: payload,
             });
 
@@ -180,7 +203,9 @@ export class UserController {
     }
 
     @Delete("remove/id/:id")
-    public async removeById(@Param("id") id: string): Promise<SuccessResponseInterface<null>> {
+    public async removeById(
+        @Param("id") id: string //
+    ): Promise<SuccessResponseInterface<null>> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -195,7 +220,9 @@ export class UserController {
             });
 
             await this.userService.remove({
-                where: { id: id },
+                where: {
+                    id: id,
+                },
             });
 
             return this.utilityService.generateSuccessResponse<null>({

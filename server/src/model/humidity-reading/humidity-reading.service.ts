@@ -7,21 +7,24 @@ import { LoggerService } from "@/provider/logger.service";
 import { PrismaService } from "@/provider/prisma.service";
 import { UtilityService } from "@/provider/utility.service";
 
-import { IoTDeviceService } from "@/model//iot-device/iot-device.service";
-
 @Injectable()
 export class HumidityReadingService {
     private readonly loggerService: LoggerService;
 
     constructor(
         private readonly utilityService: UtilityService,
-        private readonly prisma: PrismaService,
-        private readonly iotDeviceService: IoTDeviceService
+        private readonly prisma: PrismaService
     ) {
         this.loggerService = new LoggerService(HumidityReadingService.name);
     }
 
-    public async add({ iotDeviceId, humidity }: { iotDeviceId: string; humidity: number }): Promise<HumidityReading> {
+    public async add({
+        iotDeviceId, //
+        humidity,
+    }: {
+        iotDeviceId: string;
+        humidity: number;
+    }): Promise<HumidityReading> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,

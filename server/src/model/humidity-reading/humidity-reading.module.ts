@@ -10,9 +10,15 @@ import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
 import { HumidityReadingService } from "./humidity-reading.service";
 
 @Module({
-    controllers: [],
-    providers: [ConfigService, UtilityService, PrismaService, IoTDeviceService, HumidityReadingService],
-    imports: [],
-    exports: [HumidityReadingService],
+    providers: [
+        ConfigService, //
+        UtilityService,
+        PrismaService,
+        IoTDeviceService,
+        HumidityReadingService,
+    ],
+    exports: [
+        HumidityReadingService, //
+    ],
 })
 export class HumidityReadingModule {}

@@ -54,7 +54,11 @@ export class IoTDeviceService {
         }
     }
 
-    public async findUniqueWithLatestAndPreviousData({ where }: { where: Prisma.IoTDeviceWhereUniqueInput }) {
+    public async findUniqueWithLatestAndPreviousData({
+        where, //
+    }: {
+        where: Prisma.IoTDeviceWhereUniqueInput;
+    }) {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -127,7 +131,7 @@ export class IoTDeviceService {
     }
 
     public async findOrCreate({
-        agency,
+        agency, //
         floor,
         room,
     }: {

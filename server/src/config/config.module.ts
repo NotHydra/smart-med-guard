@@ -14,7 +14,13 @@ import { validate } from "./config.validation";
             cache: true,
         }),
     ],
-    exports: [NestConfigService, ConfigService],
-    providers: [NestConfigService, ConfigService],
+    exports: [
+        NestConfigService, //
+        ConfigService,
+    ],
+    providers: [
+        NestConfigService, //
+        ConfigService,
+    ],
 })
 export class ConfigModule {}

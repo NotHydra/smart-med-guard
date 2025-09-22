@@ -21,7 +21,9 @@ export class ApiKeyGuard implements CanActivate {
         this.loggerService = new LoggerService(ApiKeyGuard.name);
     }
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
+    async canActivate(
+        context: ExecutionContext //
+    ): Promise<boolean> {
         const request: Request = context.switchToHttp().getRequest<Request>();
         const apiKey: string = request.headers["x-api-key"] as string;
 

@@ -22,17 +22,19 @@ export class UserService {
     }
 
     public async find({
-        page = 0,
-        count = 0,
+        page = 0, //
+        perPage = 0,
         cursor,
         where,
         orderBy,
+        search,
     }: {
         page?: number;
-        count?: number;
+        perPage?: number;
         cursor?: Prisma.UserWhereUniqueInput;
         where?: Prisma.UserWhereInput;
         orderBy?: Prisma.UserOrderByWithRelationInput;
+        search?: string;
     }): Promise<User[]> {
         try {
             this.loggerService.log({
@@ -40,31 +42,43 @@ export class UserService {
                 addedContext: this.find.name,
             });
 
+            let searchWhere: Prisma.UserWhereInput = where || {};
+            if (search && search.trim()) {
+                searchWhere = {
+                    ...searchWhere,
+                    email: {
+                        contains: search.trim(),
+                        mode: Prisma.QueryMode.insensitive,
+                    },
+                };
+            }
+
             this.loggerService.debug({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     page: page,
-                    count: count,
+                    perPage: perPage,
                     cursor: cursor,
                     where: where,
                     orderBy: orderBy,
+                    search: search,
+                    searchWhere: searchWhere,
                 })}`,
                 addedContext: this.find.name,
             });
 
-            const models: User[] =
-                page !== 0 && count !== 0
-                    ? await this.prisma.user.findMany({
-                          skip: (page - 1) * count,
-                          take: count,
-                          cursor: cursor,
-                          where: where,
-                          orderBy: orderBy,
-                      })
-                    : await this.prisma.user.findMany({
-                          cursor: cursor,
-                          where: where,
-                          orderBy: orderBy,
-                      });
+            const models: User[] = await this.prisma.user.findMany({
+                skip:
+                    page === 0 || perPage === 0 //
+                        ? undefined
+                        : (page - 1) * perPage,
+                take:
+                    perPage === 0 //
+                        ? undefined
+                        : perPage,
+                cursor: cursor,
+                where: searchWhere,
+                orderBy: orderBy,
+            });
 
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
@@ -84,7 +98,65 @@ export class UserService {
         }
     }
 
-    public async findUnique({ where }: { where: Prisma.UserWhereUniqueInput }): Promise<User> {
+    public async count({
+        where, //
+        search,
+    }: {
+        where?: Prisma.UserWhereInput;
+        search?: string;
+    }): Promise<number> {
+        try {
+            this.loggerService.log({
+                message: MESSAGE.GENERAL.START,
+                addedContext: this.count.name,
+            });
+
+            this.loggerService.debug({
+                message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
+                    where: where,
+                    search: search,
+                })}`,
+                addedContext: this.count.name,
+            });
+
+            let searchWhere: Prisma.UserWhereInput = where || {};
+            if (search && search.trim()) {
+                searchWhere = {
+                    ...searchWhere,
+                    email: {
+                        contains: search.trim(),
+                        mode: Prisma.QueryMode.insensitive,
+                    },
+                };
+            }
+
+            const count: number = await this.prisma.user.count({
+                where: searchWhere,
+            });
+
+            this.loggerService.log({
+                message: `${MESSAGE.GENERAL.RESULT}: ${this.utilityService.pretty({
+                    count: count,
+                })}`,
+                addedContext: this.count.name,
+            });
+
+            return count;
+        } catch (error) {
+            this.loggerService.error({
+                message: `${MESSAGE.GENERAL.ERROR}: ${error.message}`,
+                addedContext: this.count.name,
+            });
+
+            throw new InternalServerErrorException("Internal Server Error");
+        }
+    }
+
+    public async findUnique({
+        where, //
+    }: {
+        where: Prisma.UserWhereUniqueInput;
+    }): Promise<User> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -128,7 +200,11 @@ export class UserService {
         }
     }
 
-    public async add({ data }: { data: Prisma.UserCreateInput }): Promise<User> {
+    public async add({
+        data, //
+    }: {
+        data: Prisma.UserCreateInput;
+    }): Promise<User> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -178,7 +254,7 @@ export class UserService {
     }
 
     public async change({
-        where,
+        where, //
         data,
     }: {
         where: Prisma.UserWhereUniqueInput;
@@ -241,7 +317,11 @@ export class UserService {
         }
     }
 
-    public async remove({ where }: { where: Prisma.UserWhereUniqueInput }): Promise<User> {
+    public async remove({
+        where, //
+    }: {
+        where: Prisma.UserWhereUniqueInput;
+    }): Promise<User> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
