@@ -10,9 +10,15 @@ import { IoTDeviceService } from "@/model/iot-device/iot-device.service";
 import { OccupancyReadingService } from "./occupancy-reading.service";
 
 @Module({
-    controllers: [],
-    providers: [ConfigService, UtilityService, PrismaService, IoTDeviceService, OccupancyReadingService],
-    imports: [],
-    exports: [OccupancyReadingService],
+    providers: [
+        ConfigService, //
+        UtilityService,
+        PrismaService,
+        IoTDeviceService,
+        OccupancyReadingService,
+    ],
+    exports: [
+        OccupancyReadingService, //
+    ],
 })
 export class OccupancyReadingModule {}

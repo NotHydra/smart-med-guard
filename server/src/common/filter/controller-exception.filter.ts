@@ -11,11 +11,16 @@ import { UtilityService } from "@/provider/utility.service";
 export class ControllerExceptionFilter implements ExceptionFilter {
     private readonly loggerService: LoggerService;
 
-    constructor(private readonly utilityService: UtilityService) {
+    constructor(
+        private readonly utilityService: UtilityService //
+    ) {
         this.loggerService = new LoggerService(ControllerExceptionFilter.name);
     }
 
-    catch(exception: HttpException | PayloadValidationException, host: ArgumentsHost): void {
+    catch(
+        exception: HttpException | PayloadValidationException, //
+        host: ArgumentsHost
+    ): void {
         this.loggerService.debug({
             message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                 exception: exception,
@@ -26,7 +31,10 @@ export class ControllerExceptionFilter implements ExceptionFilter {
             success: false,
             status: exception.getStatus(),
             message: exception.message,
-            data: exception instanceof PayloadValidationException ? exception.data : null,
+            data:
+                exception instanceof PayloadValidationException //
+                    ? exception.data
+                    : null,
             timestamp: new Date().toISOString(),
         };
 

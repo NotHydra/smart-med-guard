@@ -5,6 +5,7 @@ export default (): {
     environment: string;
     host: string;
     port: number;
+    url: string;
     apiKey: string;
     bcryptSaltRounds: number;
     jwtSecret: string;
@@ -34,6 +35,10 @@ export default (): {
 
     if (parseInt(process.env.PORT) < 0 || parseInt(process.env.PORT) > 65535) {
         throw new Error("PORT must be between 0 and 65535");
+    }
+
+    if (process.env.URL === undefined) {
+        throw new Error("URL environment variable is not set");
     }
 
     if (process.env.API_KEY === undefined) {
@@ -77,17 +82,28 @@ export default (): {
     });
 
     return {
-        logLevel: (logLevel && logLevel.length > 0 && logLevel[0] !== "all"
+        logLevel: (logLevel && logLevel.length > 0 && logLevel[0] !== "all" //
             ? logLevel
             : ["all", "log", "debug", "verbose", "warn", "error"]) as LogLevel[],
+
         environment: process.env.ENVIRONMENT,
+
         host: process.env.HOST,
+
         port: parseInt(process.env.PORT),
+
+        url: process.env.URL,
+
         apiKey: process.env.API_KEY,
+
         bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS),
+
         jwtSecret: process.env.JWT_SECRET,
+
         webSocketPort: parseInt(process.env.WEBSOCKET_PORT),
+
         mqttHost: process.env.MQTT_HOST,
+
         mqttPort: parseInt(process.env.MQTT_PORT),
     };
 };

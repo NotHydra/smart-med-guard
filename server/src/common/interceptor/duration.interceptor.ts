@@ -13,7 +13,10 @@ export class DurationInterceptor implements NestInterceptor {
         this.loggerService = new LoggerService(DurationInterceptor.name);
     }
 
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    intercept(
+        context: ExecutionContext, //
+        next: CallHandler
+    ): Observable<any> {
         const start: number = Date.now();
 
         this.loggerService.debug({

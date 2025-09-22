@@ -1,13 +1,5 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import {
-    ConnectedSocket,
-    MessageBody,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    SubscribeMessage,
-    WebSocketGateway as WSGateway,
-    WebSocketServer as WSServer,
-} from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway as WSGateway, WebSocketServer as WSServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 
 import { MESSAGE } from "@/common/constant/message";
@@ -36,7 +28,10 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
         this.loggerService = new LoggerService(WebSocketService.name);
     }
 
-    public handleConnection(client: Socket, ...args: any[]) {
+    public handleConnection(
+        client: Socket, //
+        ...args: any[]
+    ) {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
@@ -59,7 +54,9 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
         }
     }
 
-    public handleDisconnect(client: Socket) {
+    public handleDisconnect(
+        client: Socket //
+    ) {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
@@ -114,7 +111,10 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     @SubscribeMessage("hello")
-    public subscribeHello(client: Socket, payload: any): void {
+    public subscribeHello(
+        client: Socket, //
+        payload: any
+    ): void {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
@@ -139,7 +139,10 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     @SubscribeMessage("iot-device-topic-join")
-    public async subscribeIoTDeviceTopicJoin(@ConnectedSocket() client: Socket, @MessageBody() iotDeviceId: string) {
+    public async subscribeIoTDeviceTopicJoin(
+        @ConnectedSocket() client: Socket, //
+        @MessageBody() iotDeviceId: string
+    ) {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
@@ -163,11 +166,7 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
             const topic: string = `iot-device-${iotDeviceId}`;
             client.join(topic);
 
-            if (
-                iotDevice.temperatureReadings?.[0] &&
-                iotDevice.humidityReadings?.[0] &&
-                iotDevice.occupancyReadings?.[0]
-            ) {
+            if (iotDevice.temperatureReadings?.[0] && iotDevice.humidityReadings?.[0] && iotDevice.occupancyReadings?.[0]) {
                 client.emit("new", {
                     temperature: {
                         value: iotDevice.temperatureReadings[0].value,
@@ -208,7 +207,10 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     @SubscribeMessage("iot-device-topic-leave")
-    public subscribeIoTDeviceTopicLeave(@ConnectedSocket() client: Socket, @MessageBody() iotDeviceId: string): void {
+    public subscribeIoTDeviceTopicLeave(
+        @ConnectedSocket() client: Socket, //
+        @MessageBody() iotDeviceId: string
+    ): void {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,

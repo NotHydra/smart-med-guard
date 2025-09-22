@@ -25,7 +25,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         this.loggerService = new LoggerService(LocalStrategy.name);
     }
 
-    public async validate(email: string, password: string): Promise<AuthenticatedUser> {
+    public async validate(
+        email: string, //
+        password: string
+    ): Promise<AuthenticatedUser> {
         try {
             this.loggerService.log({
                 message: MESSAGE.GENERAL.START,
@@ -35,7 +38,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
             this.loggerService.debug({
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     email: email,
-                    password: password,
                 })}`,
                 addedContext: this.validate.name,
             });

@@ -12,11 +12,16 @@ import { UtilityService } from "@/provider/utility.service";
 export class ResponseFormatInterceptor<T> implements NestInterceptor<T, FormattedResponseInterface<T>> {
     private readonly loggerService: LoggerService;
 
-    constructor(private readonly utilityService: UtilityService) {
+    constructor(
+        private readonly utilityService: UtilityService //
+    ) {
         this.loggerService = new LoggerService(ResponseFormatInterceptor.name);
     }
 
-    intercept(context: ExecutionContext, next: CallHandler): Observable<FormattedResponseInterface<T>> {
+    intercept(
+        context: ExecutionContext, //
+        next: CallHandler
+    ): Observable<FormattedResponseInterface<T>> {
         return next.handle().pipe(
             map((successResponse: SuccessResponseInterface<T>): FormattedResponseInterface<T> => {
                 const formattedResponse: FormattedResponseInterface<T> = {

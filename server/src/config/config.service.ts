@@ -6,7 +6,17 @@ const ONE_MB: number = 1024 * 1024;
 
 @Injectable()
 export class ConfigService {
-    constructor(private readonly nestConfigService: NestConfigService) {}
+    constructor(
+        private readonly nestConfigService: NestConfigService //
+    ) {}
+
+    public isDevelopment(): boolean {
+        return this.getEnvironment() === "development";
+    }
+
+    public isProduction(): boolean {
+        return this.getEnvironment() === "production";
+    }
 
     public getLogLevel(): LogLevel[] {
         return this.nestConfigService.get<LogLevel[]>("logLevel")!;
@@ -22,6 +32,16 @@ export class ConfigService {
 
     public getPort(): number {
         return this.nestConfigService.get<number>("port")!;
+    }
+
+    public getURL(): string {
+        return this.nestConfigService.get<string>("url")!;
+    }
+
+    public getProtocol(): string {
+        return this.isDevelopment() //
+            ? "http"
+            : "https";
     }
 
     public getAPIKey(): string {
@@ -46,22 +66,6 @@ export class ConfigService {
 
     public getMQTTPort(): number {
         return this.nestConfigService.get<number>("mqttPort")!;
-    }
-
-    public isDevelopment(): boolean {
-        return this.getEnvironment() === "development";
-    }
-
-    public isProduction(): boolean {
-        return this.getEnvironment() === "production";
-    }
-
-    public getProtocol(): string {
-        return this.isDevelopment() ? "http" : "https";
-    }
-
-    public getBaseURL(): string {
-        return `${this.getProtocol()}://${this.getHost()}${this.isProduction() ? "" : `:${this.getPort()}`}`;
     }
 
     public getMQTTURL(): string {

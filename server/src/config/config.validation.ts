@@ -12,6 +12,9 @@ class EnvironmentVariables {
     PORT: number;
 
     @IsString()
+    URL: string;
+
+    @IsString()
     API_KEY: string;
 
     @IsString()
@@ -30,7 +33,9 @@ class EnvironmentVariables {
     MQTT_PORT: number;
 }
 
-export function validate(config: Record<string, unknown>): EnvironmentVariables {
+export function validate(
+    config: Record<string, unknown> //
+): EnvironmentVariables {
     const validatedConfig: EnvironmentVariables = plainToInstance(EnvironmentVariables, config, {
         enableImplicitConversion: true,
     });

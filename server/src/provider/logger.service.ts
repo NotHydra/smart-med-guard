@@ -10,7 +10,7 @@ export class LoggerService {
     }
 
     private generateMessage({
-        message,
+        message, //
         addedContext,
         color,
     }: {
@@ -21,7 +21,13 @@ export class LoggerService {
         return `${chalk.yellow(`[${this.context ? (addedContext ? `${this.context} -> ${addedContext}` : this.context) : addedContext}]`)} ${color ? color(message) : message}`;
     }
 
-    public log({ message, addedContext }: { message: string; addedContext?: string }): void {
+    public log({
+        message, //
+        addedContext,
+    }: {
+        message: string;
+        addedContext?: string;
+    }): void {
         this.logger.log(
             this.generateMessage({
                 message: message,
@@ -31,7 +37,13 @@ export class LoggerService {
         );
     }
 
-    public debug({ message, addedContext }: { message: string; addedContext?: string }): void {
+    public debug({
+        message, //
+        addedContext,
+    }: {
+        message: string;
+        addedContext?: string;
+    }): void {
         this.logger.debug(
             this.generateMessage({
                 message: message,
@@ -41,7 +53,13 @@ export class LoggerService {
         );
     }
 
-    public verbose({ message, addedContext }: { message: string; addedContext?: string }): void {
+    public verbose({
+        message, //
+        addedContext,
+    }: {
+        message: string;
+        addedContext?: string;
+    }): void {
         this.logger.verbose(
             this.generateMessage({
                 message: message,
@@ -51,7 +69,13 @@ export class LoggerService {
         );
     }
 
-    public warn({ message, addedContext }: { message: string; addedContext?: string }): void {
+    public warn({
+        message, //
+        addedContext,
+    }: {
+        message: string;
+        addedContext?: string;
+    }): void {
         this.logger.warn(
             this.generateMessage({
                 message: message,
@@ -61,7 +85,13 @@ export class LoggerService {
         );
     }
 
-    public error({ message, addedContext }: { message: string; addedContext?: string }): void {
+    public error({
+        message, //
+        addedContext,
+    }: {
+        message: string;
+        addedContext?: string;
+    }): void {
         this.logger.error(
             this.generateMessage({
                 message: message,
@@ -72,7 +102,7 @@ export class LoggerService {
     }
 
     public fatal({
-        message,
+        message, //
         stackTrace,
         addedContext,
     }: {

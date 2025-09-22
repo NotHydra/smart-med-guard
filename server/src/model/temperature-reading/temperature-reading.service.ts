@@ -19,7 +19,7 @@ export class TemperatureReadingService {
     }
 
     public async add({
-        iotDeviceId,
+        iotDeviceId, //
         temperature,
     }: {
         iotDeviceId: string;

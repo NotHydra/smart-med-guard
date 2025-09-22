@@ -1,21 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 
 import { ConfigService } from "@/config/config.service";
 
 import { MESSAGE } from "@/common/constant/message";
 import { SuccessResponseInterface } from "@/common/interface/response.interface";
 
+import { OrderDirectionEnum } from "@/common/enum/order-direction.enum";
 import { LoggerService } from "./logger.service";
 
 @Injectable()
 export class UtilityService {
     private readonly loggerService: LoggerService;
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService //
+    ) {
         this.loggerService = new LoggerService(UtilityService.name);
     }
 
-    public capitalize(text: string): string {
+    public capitalize(
+        text: string //
+    ): string {
         this.loggerService.verbose({
             message: MESSAGE.GENERAL.START,
             addedContext: this.capitalize.name,
@@ -38,7 +43,9 @@ export class UtilityService {
         return result;
     }
 
-    public pretty(json: any): string {
+    public pretty(
+        json: any //
+    ): string {
         this.loggerService.verbose({
             message: MESSAGE.GENERAL.START,
             addedContext: this.pretty.name,
@@ -65,8 +72,25 @@ export class UtilityService {
         return result;
     }
 
+    public validateOrderBy<E extends Record<string, any>>(
+        orderByEnum: E, //
+        orderByValue: keyof E | undefined
+    ) {
+        if (orderByValue !== undefined && !Object.values(orderByEnum).includes(orderByValue)) {
+            throw new BadRequestException(`Invalid orderBy value. Must be one of: ${Object.values(orderByEnum).join(", ")}`);
+        }
+    }
+
+    public validateOrderDirection(
+        orderDirection: OrderDirectionEnum | undefined //
+    ) {
+        if (orderDirection !== undefined && !Object.values(OrderDirectionEnum).includes(orderDirection)) {
+            throw new BadRequestException(`Invalid orderDirection value. Must be one of: ${Object.values(OrderDirectionEnum).join(", ")}`);
+        }
+    }
+
     public generateSuccessResponse<T>({
-        status,
+        status, //
         message,
         data,
     }: {
@@ -102,7 +126,11 @@ export class UtilityService {
         return result;
     }
 
-    public generateFileURL({ filePath }: { filePath: string }): string {
+    public generateFileURL({
+        filePath, //
+    }: {
+        filePath: string;
+    }): string {
         this.loggerService.verbose({
             message: MESSAGE.GENERAL.START,
             addedContext: this.generateFileURL.name,
@@ -115,7 +143,7 @@ export class UtilityService {
             addedContext: this.generateFileURL.name,
         });
 
-        const result: string = `${this.configService.getBaseURL()}/${filePath}`;
+        const result: string = `${this.configService.getURL()}/${filePath}`;
 
         this.loggerService.verbose({
             message: `${MESSAGE.GENERAL.RESULT}: ${result}`,

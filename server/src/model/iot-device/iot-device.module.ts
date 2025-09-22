@@ -9,9 +9,17 @@ import { IoTDeviceController } from "./iot-device.controller";
 import { IoTDeviceService } from "./iot-device.service";
 
 @Module({
-    controllers: [IoTDeviceController],
-    providers: [ConfigService, UtilityService, PrismaService, IoTDeviceService],
-    imports: [],
-    exports: [IoTDeviceService],
+    controllers: [
+        IoTDeviceController, //
+    ],
+    providers: [
+        ConfigService, //
+        UtilityService,
+        PrismaService,
+        IoTDeviceService,
+    ],
+    exports: [
+        IoTDeviceService, //
+    ],
 })
 export class IoTDeviceModule {}

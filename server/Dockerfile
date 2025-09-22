@@ -10,13 +10,18 @@ RUN pnpm install
 COPY . .
 
 RUN pnpm run prisma:generate
-RUN pnpm run build
 
 
 
 FROM base AS development
 
-CMD ["pnpm", "run", "start:dev"]
+CMD ["pnpm", "run", "start:dev"] 
+
+
+
+FROM base AS build
+
+RUN pnpm run build
 
 
 
@@ -24,8 +29,11 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-COPY --from=base /app/dist ./dist
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/package.json ./package.json
+RUN npm install -g pnpm
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/package.json ./package.json
 
 CMD ["pnpm", "run", "start:prod"]

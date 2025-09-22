@@ -9,7 +9,8 @@ services:
 
         build:
             context: ./website
-            target: development
+
+            target: base
 
         env_file:
             - .env
@@ -17,7 +18,7 @@ services:
         environment:
             - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
             - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
-            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_API_KEY}
 
         ports:
             - ${WEBSITE_PORT}:${WEBSITE_PORT}
@@ -30,10 +31,12 @@ services:
             - ./website/src:/app/src:ro
             - ./website/public:/app/public:ro
 
-        restart: always
+        command: ["pnpm", "run", "dev", "-H", "0.0.0.0", "-p", "${WEBSITE_PORT}"]
+
+        restart: unless-stopped
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
     website-production:
         container_name: smart-med-guard-website-production
@@ -43,11 +46,13 @@ services:
 
         build:
             context: ./website
+
             target: production
+
             args:
                 - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
                 - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
-                - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+                - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_API_KEY}
 
         env_file:
             - .env
@@ -55,7 +60,7 @@ services:
         environment:
             - NEXT_PUBLIC_SERVER_URL=${SERVER_URL}
             - NEXT_PUBLIC_SERVER_WEBSOCKET_URL=${SERVER_WEBSOCKET_URL}
-            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_UNENCRYPTED_API_KEY}
+            - NEXT_PUBLIC_SERVER_API_KEY=${SERVER_API_KEY}
 
         ports:
             - ${WEBSITE_PORT}:${WEBSITE_PORT}
@@ -67,7 +72,7 @@ services:
         restart: unless-stopped
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
     server-development:
         container_name: smart-med-guard-server-development
@@ -77,6 +82,7 @@ services:
 
         build:
             context: ./server
+
             target: development
 
         env_file:
@@ -87,6 +93,7 @@ services:
             - ENVIRONMENT=development
             - HOST=${SERVER_HOST}
             - PORT=${SERVER_PORT}
+            - URL=${SERVER_URL}
             - API_KEY=${SERVER_API_KEY}
             - BCRYPT_SALT_ROUNDS=${SERVER_BCRYPT_SALT_ROUNDS}
             - JWT_SECRET=${SERVER_JWT_SECRET}
@@ -103,22 +110,22 @@ services:
             mqtt:
                 condition: service_started
 
-            database:
+            database-development:
                 condition: service_healthy
 
         volumes:
             - ./server/src:/app/src:ro
 
-        restart: always
+        restart: unless-stopped
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
         healthcheck:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_UNENCRYPTED_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
@@ -132,7 +139,8 @@ services:
 
         build:
             context: ./server
-            target: development
+
+            target: production
 
         env_file:
             - .env
@@ -142,6 +150,7 @@ services:
             - ENVIRONMENT=production
             - HOST=${SERVER_HOST}
             - PORT=${SERVER_PORT}
+            - URL=${SERVER_URL}
             - API_KEY=${SERVER_API_KEY}
             - BCRYPT_SALT_ROUNDS=${SERVER_BCRYPT_SALT_ROUNDS}
             - JWT_SECRET=${SERVER_JWT_SECRET}
@@ -158,19 +167,19 @@ services:
             mqtt:
                 condition: service_started
 
-            database:
+            database-production:
                 condition: service_healthy
 
         restart: unless-stopped
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
         healthcheck:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_UNENCRYPTED_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
@@ -203,7 +212,7 @@ services:
         restart: always
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
     mqtt:
         image: eclipse-mosquitto:latest
@@ -226,7 +235,7 @@ services:
             - ./mqtt/log:/mosquitto/log
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
     prisma-studio-development:
         container_name: smart-med-guard-prisma-studio-development
@@ -236,6 +245,7 @@ services:
 
         build:
             context: ./server
+
             target: base
 
         env_file:
@@ -252,18 +262,12 @@ services:
                 condition: service_healthy
 
         command:
-            [
-                "pnpm",
-                "run",
-                "prisma:studio",
-                "--port",
-                "${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}",
-            ]
+            ["pnpm", "run", "prisma:studio", "--port", "${PRISMA_STUDIO_PORT}"]
 
-        restart: always
+        restart: unless-stopped
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
     prisma-studio-production:
         container_name: smart-med-guard-prisma-studio-production
@@ -273,6 +277,7 @@ services:
 
         build:
             context: ./server
+
             target: base
 
         env_file:
@@ -289,26 +294,54 @@ services:
                 condition: service_healthy
 
         command:
-            [
-                "pnpm",
-                "run",
-                "prisma:studio",
-                "--port",
-                "${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}",
-            ]
+            ["pnpm", "run", "prisma:studio", "--port", "${PRISMA_STUDIO_PORT}"]
 
         restart: unless-stopped
 
         networks:
-            - system-network
+            - smart-med-guard-network
 
-    database:
+    database-development:
         image: postgres:latest
 
-        container_name: smart-med-guard-database
+        container_name: smart-med-guard-database-development
 
         profiles:
             - development
+
+        env_file:
+            - .env
+
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+
+        ports:
+            - ${POSTGRES_PORT}:5432
+
+        volumes:
+            - smart_med_guard_postgres_data:/var/lib/postgresql/data
+
+        networks:
+            - smart-med-guard-network
+
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    database-production:
+        image: postgres:latest
+
+        container_name: smart-med-guard-database-production
+
+        profiles:
             - production
 
         env_file:
@@ -320,13 +353,15 @@ services:
             - POSTGRES_DB=${POSTGRES_DB}
 
         ports:
-            - ${POSTGRES_PORT}:${POSTGRES_PORT}
+            - ${POSTGRES_PORT}:5432
 
         volumes:
             - smart_med_guard_postgres_data:/var/lib/postgresql/data
 
         networks:
-            - system-network
+            - smart-med-guard-network
+
+        restart: unless-stopped
 
         healthcheck:
             test:
@@ -342,7 +377,9 @@ volumes:
     smart_med_guard_postgres_data:
 
 networks:
-    system-network:
+    smart-med-guard-network:
+        name: "smart-med-guard-network"
+
         driver: bridge
 
         driver_opts:
