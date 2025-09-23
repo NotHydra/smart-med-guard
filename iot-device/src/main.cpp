@@ -1,16 +1,16 @@
+#include <Arduino.h>
 #include <ArduinoJson.h>
+#include <DHT.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
 
 #include "../config.h"
-#include "Arduino.h"
-#include "DHT.h"
 
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
-String topic = String("iot-device/") + DEVICE_AGENCY + "/" + String(DEVICE_FLOOR) + "/" + DEVICE_ROOM;
+const String topic = String("iot-device/") + DEVICE_AGENCY + "/" + String(DEVICE_FLOOR) + "/" + DEVICE_ROOM;
 unsigned long lastSensorReading = 0;
 
 void printBorder() {
@@ -76,8 +76,8 @@ void initializeSensors() {
     Serial.println("Warming up sensors...");
     delay(3000);
 
-    float testTemperature = dht.readTemperature();
-    float testHumidity = dht.readHumidity();
+    const float testTemperature = dht.readTemperature();
+    const float testHumidity = dht.readHumidity();
 
     if (isnan(testTemperature) || isnan(testHumidity)) {
         Serial.println("WARNING: DHT22 sensor not responding properly!");
@@ -85,19 +85,15 @@ void initializeSensors() {
     } else {
         Serial.println("DHT22 sensor initialized successfully");
         Serial.println("Test readings:");
-        Serial.printf("- Temperature: %.1f°C", testTemperature);
-        Serial.println();
-        Serial.printf("- Humidity: %.1f%%", testHumidity);
-        Serial.println();
+        Serial.printf("- Temperature: %.1f°C\n", testTemperature);
+        Serial.printf("- Humidity: %.1f%%\n", testHumidity);
     }
 }
 
 void connectToWiFi() {
     Serial.println("Connecting to WiFi...");
-    Serial.printf("SSID: %s", WIFI_SSID);
-    Serial.println();
-    Serial.printf("Password: %s", WIFI_PASSWORD);
-    Serial.println();
+    Serial.printf("SSID: %s\n", WIFI_SSID);
+    Serial.printf("Password: %s\n", WIFI_PASSWORD);
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -115,10 +111,8 @@ void connectToWiFi() {
 
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("WiFi connected successfully!");
-        Serial.printf("IP Address: %s", WiFi.localIP().toString().c_str());
-        Serial.println();
-        Serial.printf("Signal Strength: %d dBm", WiFi.RSSI());
-        Serial.println();
+        Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
+        Serial.printf("Signal Strength: %d dBm\n", WiFi.RSSI());
     } else {
         Serial.println("Failed to connect to WiFi!");
         Serial.println("Please check your WiFi credentials and try again.");
@@ -131,10 +125,8 @@ void connectToWiFi() {
 
 void setupMQTT() {
     Serial.println("Setting up MQTT...");
-    Serial.printf("MQTT Broker: %s:%d", MQTT_HOST, MQTT_PORT);
-    Serial.println();
-    Serial.printf("Client ID: %s", MQTT_CLIENT_ID);
-    Serial.println();
+    Serial.printf("MQTT Broker: %s:%d\n", MQTT_HOST, MQTT_PORT);
+    Serial.printf("Client ID: %s\n", MQTT_CLIENT_ID);
 
     mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 }
@@ -149,16 +141,11 @@ void connectToMQTT() {
         if (mqttClient.connect(MQTT_CLIENT_ID)) {
             Serial.println("Connected!");
             Serial.println("Device Configuration:");
-            Serial.printf("- Agency: %s", DEVICE_AGENCY);
-            Serial.println();
-            Serial.printf("- Floor: %d", DEVICE_FLOOR);
-            Serial.println();
-            Serial.printf("- Room: %s", DEVICE_ROOM);
-            Serial.println();
+            Serial.printf("- Agency: %s\n", DEVICE_AGENCY);
+            Serial.printf("- Floor: %d\n", DEVICE_FLOOR);
+            Serial.printf("- Room: %s\n", DEVICE_ROOM);
         } else {
-            Serial.printf("Failed (rc=%d). Retrying in %d seconds...", mqttClient.state(), MQTT_RECONNECT_DELAY / 1000);
-            Serial.println();
-
+            Serial.printf("Failed (rc=%d). Retrying in %d seconds...\n", mqttClient.state(), MQTT_RECONNECT_DELAY / 1000);
             delay(MQTT_RECONNECT_DELAY);
         }
 
@@ -166,8 +153,7 @@ void connectToMQTT() {
     }
 
     if (!mqttClient.connected()) {
-        Serial.printf("Failed to connect to MQTT broker after %d attempts!", MQTT_RETRY_ATTEMPTS);
-        Serial.println();
+        Serial.printf("Failed to connect to MQTT broker after %d attempts!\n", MQTT_RETRY_ATTEMPTS);
         Serial.println("Please check your MQTT broker configuration.");
     }
 }
@@ -175,9 +161,7 @@ void connectToMQTT() {
 void reconnectMQTT() {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi disconnected. Reconnecting...");
-
         connectToWiFi();
-
         printBorder();
     }
 
@@ -185,14 +169,13 @@ void reconnectMQTT() {
 }
 
 void readAndPublishSensorData() {
-    float temperature = dht.readTemperature();
-    float humidity = dht.readHumidity();
-    int motionValue = digitalRead(PIRPIN);
-    bool occupancy = (motionValue == HIGH);
+    const float temperature = dht.readTemperature();
+    const float humidity = dht.readHumidity();
+    const int motionValue = digitalRead(PIRPIN);
+    const bool occupancy = (motionValue == HIGH);
 
-    unsigned long timestamp = millis();
-    Serial.printf("\n[%lu ms] Sensor Reading:", timestamp);
-    Serial.println();
+    const unsigned long timestamp = millis();
+    Serial.printf("\n[%lu ms] Sensor Reading:\n", timestamp);
 
     bool validReading = true;
     if (isnan(temperature) || isnan(humidity)) {
@@ -200,14 +183,11 @@ void readAndPublishSensorData() {
 
         validReading = false;
     } else {
-        Serial.printf("- Temperature: %.1f°C", temperature);
-        Serial.println();
-        Serial.printf("- Humidity: %.1f%%", humidity);
-        Serial.println();
+        Serial.printf("- Temperature: %.1f°C\n", temperature);
+        Serial.printf("- Humidity: %.1f%%\n", humidity);
     }
 
-    Serial.printf("- Motion: %s", occupancy ? "DETECTED" : "None");
-    Serial.println();
+    Serial.printf("- Motion: %s\n", occupancy ? "DETECTED" : "None");
 
     if (validReading && mqttClient.connected()) {
         publishSensorData(temperature, humidity, occupancy);
@@ -236,10 +216,8 @@ void publishSensorData(float temperature, float humidity, bool occupancy) {
     String payload;
     serializeJson(outerDoc, payload);
 
-    Serial.printf("Publishing to topic: %s", topic.c_str());
-    Serial.println();
-    Serial.printf("Payload: %s", payload.c_str());
-    Serial.println();
+    Serial.printf("Publishing to topic: %s\n", topic.c_str());
+    Serial.printf("Payload: %s\n", payload.c_str());
 
     if (mqttClient.publish(topic.c_str(), payload.c_str())) {
         Serial.println("Data published successfully!");
