@@ -10,6 +10,9 @@
 			"path": "./mqtt-test"
 		},
 		{
+			"path": "./iot-device"
+		},
+		{
 			"path": "./web-socket-test"
 		},
 		{
