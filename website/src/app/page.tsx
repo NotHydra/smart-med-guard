@@ -69,7 +69,7 @@ export default function Home() {
 
                         <CardContent>
                             {iotDevices.length > 0 ? (
-                                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
                                     {iotDevices.map(
                                         (iotDevice: IoTDeviceInterface): JSX.Element => (
                                             <IoTDeviceCard key={iotDevice.id} iotDevice={iotDevice} />
