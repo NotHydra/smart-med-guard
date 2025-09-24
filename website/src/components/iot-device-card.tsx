@@ -264,7 +264,7 @@ export function IoTDeviceCard({
                     {history !== undefined && (history.temperature.length > 0 || history.humidity.length > 0) ? (
                         <>
                             <div className="space-y-2">
-                                <div className="flex flex-col md:flex-row items-center justify-between space-y-1 md:space-y-0">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-1 md:space-y-0">
                                     <div className="flex items-center gap-1">
                                         <Thermometer className="h-3 w-3 text-orange-600" />
 
@@ -420,7 +420,7 @@ export function IoTDeviceCard({
                             </div>
 
                             <div className="space-y-2">
-                                <div className="flex flex-col md:flex-row items-center justify-between space-y-1 md:space-y-0">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-1 md:space-y-0">
                                     <div className="flex items-center gap-1">
                                         <Droplets className="h-3 w-3 text-cyan-600" />
 
