@@ -12,46 +12,6 @@ import { Card, CardContent } from '@/components/ui/card';
 
 import { numberToOrdinal } from '@/utility/number-to-ordinal.utility';
 
-const getTrend = <Type extends HistoricalDataInterface>(history: Type[] | undefined): 'up' | 'down' | 'stable' => {
-    if (!history || history.length < 2) {
-        return 'stable';
-    }
-
-    const recent: Type[] = history.slice(0, 3);
-    if (recent.length < 2) {
-        return 'stable';
-    }
-
-    const latest: number = recent[0].value;
-    const previous: number = recent.slice(1).reduce((sum, item) => sum + item.value, 0) / (recent.length - 1);
-
-    const difference: number = Math.abs(latest - previous);
-    const threshold: number = previous * 0.05;
-
-    if (difference < threshold) {
-        return 'stable';
-    }
-
-    return latest > previous //
-        ? 'up'
-        : 'down';
-};
-
-const getTrendIcon = (trend: 'up' | 'down' | 'stable', size: number = 3): JSX.Element => {
-    const className: string = `h-${size} w-${size}`;
-
-    switch (trend) {
-        case 'up':
-            return <TrendingUp className={`${className} text-green-500`} />;
-
-        case 'down':
-            return <TrendingDown className={`${className} text-red-500`} />;
-
-        default:
-            return <Minus className={`${className} text-gray-400`} />;
-    }
-};
-
 export function IoTDeviceCard({
     iotDevice, //
 }: {
@@ -60,6 +20,46 @@ export function IoTDeviceCard({
     const [status, setStatus] = useState<Status>(Status.CONNECTING);
     const [currentValue, setCurrentValue] = useState<IoTDeviceCurrentValueInterface>();
     const [history, setHistory] = useState<IoTDeviceHistoryInterface>();
+
+    const getTrend = <Type extends HistoricalDataInterface>(history: Type[] | undefined): 'up' | 'down' | 'stable' => {
+        if (!history || history.length < 2) {
+            return 'stable';
+        }
+
+        const recent: Type[] = history.slice(0, 3);
+        if (recent.length < 2) {
+            return 'stable';
+        }
+
+        const latest: number = recent[0].value;
+        const previous: number = recent.slice(1).reduce((sum, item) => sum + item.value, 0) / (recent.length - 1);
+
+        const difference: number = Math.abs(latest - previous);
+        const threshold: number = previous * 0.05;
+
+        if (difference < threshold) {
+            return 'stable';
+        }
+
+        return latest > previous //
+            ? 'up'
+            : 'down';
+    };
+
+    const getTrendIcon = (trend: 'up' | 'down' | 'stable', size: number = 3): JSX.Element => {
+        const className: string = `h-${size} w-${size}`;
+
+        switch (trend) {
+            case 'up':
+                return <TrendingUp className={`${className} text-green-500`} />;
+
+            case 'down':
+                return <TrendingDown className={`${className} text-red-500`} />;
+
+            default:
+                return <Minus className={`${className} text-gray-400`} />;
+        }
+    };
 
     useEffect(() => {
         const timer: NodeJS.Timeout = setTimeout(
@@ -263,183 +263,6 @@ export function IoTDeviceCard({
                 <div className="space-y-4">
                     {history !== undefined && (history.temperature.length > 0 || history.humidity.length > 0) ? (
                         <>
-                            {history.temperature.length > 0 && history.humidity.length > 0 && (
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-1">
-                                                <Thermometer className="h-3 w-3 text-orange-600" />
-
-                                                <span className="text-xs text-muted-foreground">Temperature</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-1">
-                                                <Droplets className="h-3 w-3 text-cyan-600" />
-
-                                                <span className="text-xs text-muted-foreground">Humidity</span>
-                                            </div>
-                                        </div>
-
-                                        <span className="text-xs font-medium text-muted-foreground">Combined Chart</span>
-                                    </div>
-
-                                    <div className="h-40">
-                                        <ResponsiveContainer //
-                                            width="100%"
-                                            height="100%"
-                                        >
-                                            <LineChart
-                                                data={history.temperature.toReversed().map((temperatureItem: TemperatureInterface, index: number) => {
-                                                    const humidityItem: HumidityInterface = history.humidity.toReversed()[index];
-
-                                                    return {
-                                                        temperature: temperatureItem.value,
-                                                        humidity: humidityItem //
-                                                            ? humidityItem.value
-                                                            : null,
-                                                        time: new Date(temperatureItem.timestamp).toLocaleTimeString('en-GB', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                            second: '2-digit',
-                                                            hour12: false,
-                                                        }),
-                                                        fullDateTime: new Date(temperatureItem.timestamp).toLocaleString('en-GB', {
-                                                            day: '2-digit',
-                                                            month: '2-digit',
-                                                            year: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                            second: '2-digit',
-                                                            hour12: false,
-                                                        }),
-                                                    };
-                                                })}
-                                                margin={{
-                                                    top: 10,
-                                                    right: 50,
-                                                    left: 50,
-                                                    bottom: 10,
-                                                }}
-                                            >
-                                                <CartesianGrid //
-                                                    strokeDasharray="3 3"
-                                                    stroke="#374151"
-                                                    opacity={0.2}
-                                                />
-
-                                                <XAxis
-                                                    dataKey="time"
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{
-                                                        fontSize: 9,
-                                                        fill: '#6B7280',
-                                                    }}
-                                                    interval="preserveStartEnd"
-                                                    angle={-45}
-                                                    textAnchor="end"
-                                                    height={40}
-                                                />
-
-                                                <YAxis
-                                                    yAxisId="temperature"
-                                                    orientation="left"
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{
-                                                        fontSize: 9,
-                                                        fill: '#EA580C',
-                                                    }}
-                                                    tickFormatter={(value) => `${value}°C`}
-                                                    width={45}
-                                                />
-
-                                                <YAxis
-                                                    yAxisId="humidity"
-                                                    orientation="right"
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tick={{
-                                                        fontSize: 9,
-                                                        fill: '#0891B2',
-                                                    }}
-                                                    tickFormatter={(value) => `${value}%`}
-                                                    width={45}
-                                                />
-
-                                                <Tooltip
-                                                    labelFormatter={(value, payload) => {
-                                                        if (payload && payload[0]) {
-                                                            return `${payload[0].payload.fullDateTime}`;
-                                                        }
-
-                                                        return `Time: ${value}`;
-                                                    }}
-                                                    formatter={(value, name) => {
-                                                        if (name === 'temperature') {
-                                                            return [`${Number(value).toFixed(2)} °C`, 'Temperature'];
-                                                        } else if (name === 'humidity') {
-                                                            return [`${Number(value).toFixed(2)}%`, 'Humidity'];
-                                                        }
-
-                                                        return [value, name];
-                                                    }}
-                                                    contentStyle={{
-                                                        backgroundColor: '#1F2937',
-                                                        border: '1px solid #374151',
-                                                        borderRadius: '6px',
-                                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                                    }}
-                                                    labelStyle={{
-                                                        color: '#F3F4F6',
-                                                    }}
-                                                />
-
-                                                <Line
-                                                    yAxisId="temperature"
-                                                    type="monotone"
-                                                    dataKey="temperature"
-                                                    stroke="#EA580C"
-                                                    strokeWidth={2.5}
-                                                    dot={{
-                                                        fill: '#EA580C',
-                                                        strokeWidth: 1,
-                                                        stroke: '#FFF',
-                                                        r: 3,
-                                                    }}
-                                                    activeDot={{
-                                                        r: 5,
-                                                        stroke: '#EA580C',
-                                                        strokeWidth: 2,
-                                                        fill: '#FFF',
-                                                    }}
-                                                />
-
-                                                <Line
-                                                    yAxisId="humidity"
-                                                    type="monotone"
-                                                    dataKey="humidity"
-                                                    stroke="#0891B2"
-                                                    strokeWidth={2.5}
-                                                    dot={{
-                                                        fill: '#0891B2',
-                                                        strokeWidth: 1,
-                                                        stroke: '#FFF',
-                                                        r: 3,
-                                                    }}
-                                                    activeDot={{
-                                                        r: 5,
-                                                        stroke: '#0891B2',
-                                                        strokeWidth: 2,
-                                                        fill: '#FFF',
-                                                    }}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </div>
-                            )}
-
                             <div className="space-y-2">
                                 <div className="flex flex-col md:flex-row items-center justify-between space-y-1 md:space-y-0">
                                     <div className="flex items-center gap-1">
