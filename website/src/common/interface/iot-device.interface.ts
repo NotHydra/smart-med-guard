@@ -5,29 +5,27 @@ export interface IoTDeviceInterface {
     room: string;
 }
 
+export interface HistoricalDataInterface {
+    value: number;
+    timestamp: string;
+}
+
+export interface TemperatureInterface extends HistoricalDataInterface {}
+
+export interface HumidityInterface extends HistoricalDataInterface {}
+
+export interface OccupancyInterface {
+    value: number;
+}
+
 export interface IoTDeviceCurrentValueInterface {
-    temperature: {
-        value: number;
-        timestamp: string;
-    };
-    humidity: {
-        value: number;
-        timestamp: string;
-    };
-    occupancy: {
-        value: number;
-    };
+    temperature: TemperatureInterface;
+    humidity: HumidityInterface;
+    occupancy: OccupancyInterface;
     lastUpdate: Date;
 }
 
 export interface IoTDeviceHistoryInterface {
-    temperature: {
-        value: number;
-        timestamp: string;
-    }[];
-
-    humidity: {
-        value: number;
-        timestamp: string;
-    }[];
+    temperature: TemperatureInterface[];
+    humidity: HumidityInterface[];
 }
