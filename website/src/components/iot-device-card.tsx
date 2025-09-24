@@ -764,20 +764,25 @@ export function IoTDeviceCard({
                 </div>
 
                 <div className="border-t">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 pt-4">
-                        <Clock className="h-3 w-3" /> Last Update:{' '}
-                        {currentValue !== undefined //
-                            ? currentValue.lastUpdate.toLocaleDateString('en-GB', {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric',
-                              }) +
-                              ' - ' +
-                              currentValue.lastUpdate.toLocaleTimeString('en-GB', {
-                                  hour12: false,
-                              })
-                            : '-'}
-                    </p>
+                    <div className="text-xs text-muted-foreground pt-4 space-y-1">
+                        <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> <span>Last Update:</span>
+                        </div>
+
+                        <p>
+                            {currentValue !== undefined //
+                                ? currentValue.lastUpdate.toLocaleDateString('en-GB', {
+                                      day: 'numeric',
+                                      month: 'long',
+                                      year: 'numeric',
+                                  }) +
+                                  ' - ' +
+                                  currentValue.lastUpdate.toLocaleTimeString('en-GB', {
+                                      hour12: false,
+                                  })
+                                : '-'}
+                        </p>
+                    </div>
                 </div>
             </CardContent>
         </Card>
