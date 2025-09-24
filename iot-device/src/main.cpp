@@ -13,6 +13,15 @@ PubSubClient mqttClient(wifiClient);
 const String topic = String("iot-device/") + DEVICE_AGENCY + "/" + String(DEVICE_FLOOR) + "/" + DEVICE_ROOM;
 unsigned long lastSensorReading = 0;
 
+void printBorder();
+void initializeSensors();
+void connectToWiFi();
+void setupMQTT();
+void connectToMQTT();
+void reconnectMQTT();
+void readAndPublishSensorData();
+void publishSensorData(float temperature, float humidity, bool occupancy);
+
 void printBorder() {
     Serial.println("========================================");
 }
@@ -24,7 +33,7 @@ void setup() {
     }
 
     printBorder();
-    Serial.println("Smart Med Guard - IoT Device Starting...");
+    Serial.println("SmartMedGuard");
     printBorder();
 
     initializeSensors();
@@ -43,7 +52,7 @@ void setup() {
 
     printBorder();
 
-    Serial.println("System ready - starting monitoring...");
+    Serial.println("Starting monitoring...");
     printBorder();
 }
 
@@ -100,8 +109,6 @@ void connectToWiFi() {
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < WIFI_TIMEOUT) {
         delay(1000);
-
-        Serial.print(".");
 
         attempts++;
     }
