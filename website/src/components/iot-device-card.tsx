@@ -166,32 +166,30 @@ export function IoTDeviceCard({
             <div className={`absolute top-0 left-0 w-full h-1 ${status === Status.CONNECTING ? 'bg-amber-500' : status === Status.ONLINE ? 'bg-green-500' : 'bg-red-500'}`} />
 
             <CardContent className="p-3 space-y-6">
-                <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                <div className="items-start justify-between">
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-sm">{iotDevice.room}</h3>
+
                         <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-sm">{iotDevice.room}</h3>
+                            {status === Status.CONNECTING ? (
+                                <>
+                                    <span className="text-xs text-amber-600">Connecting</span> <WifiLow className="h-4 w-4 text-amber-600" />
+                                </>
+                            ) : status === Status.ONLINE ? (
+                                <>
+                                    <span className="text-xs text-green-600">Online</span> <Wifi className="h-4 w-4 text-green-600" />
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-xs text-red-600">Offline</span> <WifiOff className="h-4 w-4 text-red-600" />
+                                </>
+                            )}
                         </div>
-
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {iotDevice.agency} • {numberToOrdinal(iotDevice.floor)} Floor
-                        </p>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                        {status === Status.CONNECTING ? (
-                            <>
-                                <span className="text-xs text-amber-600">Connecting</span> <WifiLow className="h-4 w-4 text-amber-600" />
-                            </>
-                        ) : status === Status.ONLINE ? (
-                            <>
-                                <span className="text-xs text-green-600">Online</span> <Wifi className="h-4 w-4 text-green-600" />
-                            </>
-                        ) : (
-                            <>
-                                <span className="text-xs text-red-600">Offline</span> <WifiOff className="h-4 w-4 text-red-600" />
-                            </>
-                        )}
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {iotDevice.agency} • {numberToOrdinal(iotDevice.floor)} Floor
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
