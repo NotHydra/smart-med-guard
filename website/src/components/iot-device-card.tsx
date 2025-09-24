@@ -62,9 +62,12 @@ export function IoTDeviceCard({
     };
 
     useEffect(() => {
+        let socket: Socket;
+        let dataFreshnessInterval: NodeJS.Timeout;
+
         const timer: NodeJS.Timeout = setTimeout(
             () => {
-                const socket: Socket = io(process.env.NEXT_PUBLIC_SERVER_WEBSOCKET_URL, {
+                socket = io(process.env.NEXT_PUBLIC_SERVER_WEBSOCKET_URL, {
                     transports: ['websocket'],
                     timeout: 5000,
                     reconnectionAttempts: 5,
@@ -80,7 +83,7 @@ export function IoTDeviceCard({
 
                     console.log(`📤 (${iotDevice.id}) Sent hello message to server`);
 
-                    setStatus(Status.ONLINE);
+                    setStatus(Status.CONNECTING);
                 });
 
                 socket.on('connect_error', function (err) {
@@ -144,6 +147,10 @@ export function IoTDeviceCard({
 
                         return newValue;
                     });
+
+                    if (socket.connected) {
+                        setStatus(Status.ONLINE);
+                    }
                 });
 
                 socket.on('history', function (data) {
@@ -151,11 +158,46 @@ export function IoTDeviceCard({
 
                     setHistory(data);
                 });
+
+                dataFreshnessInterval = setInterval(() => {
+                    setCurrentValue((currentValue: IoTDeviceCurrentValueInterface | undefined) => {
+                        if (currentValue && socket.connected) {
+                            const now: Date = new Date();
+                            const timeDifferenceSeconds: number = (now.getTime() - currentValue.lastUpdate.getTime()) / 1000;
+
+                            if (timeDifferenceSeconds > 5) {
+                                console.log(`⏰ (${iotDevice.id}) Data is stale (${timeDifferenceSeconds.toFixed(1)}s old), setting status to offline`);
+
+                                setStatus(Status.OFFLINE);
+                            } else if (timeDifferenceSeconds <= 5) {
+                                setStatus((currentStatus: Status): Status => {
+                                    if (currentStatus !== Status.ONLINE && socket.connected) {
+                                        return Status.ONLINE;
+                                    }
+
+                                    return currentStatus;
+                                });
+                            }
+                        }
+
+                        return currentValue;
+                    });
+                }, 1000);
             },
             Math.random() * 3000 + 100,
         );
 
-        return () => clearTimeout(timer);
+        return (): void => {
+            clearTimeout(timer);
+
+            if (dataFreshnessInterval) {
+                clearInterval(dataFreshnessInterval);
+            }
+
+            if (socket) {
+                socket.disconnect();
+            }
+        };
     }, []);
 
     console.log(`🔄 (${iotDevice.id}) Current Value:`, currentValue);
