@@ -165,7 +165,7 @@ export function IoTDeviceCard({
         <Card className="relative overflow-hidden">
             <div className={`absolute top-0 left-0 w-full h-1 ${status === Status.CONNECTING ? 'bg-amber-500' : status === Status.ONLINE ? 'bg-green-500' : 'bg-red-500'}`} />
 
-            <CardContent className="p-3 space-y-5">
+            <CardContent className="p-3 space-y-6">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -262,11 +262,11 @@ export function IoTDeviceCard({
                     </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {history !== undefined && (history.temperature.length > 0 || history.humidity.length > 0) ? (
                         <>
                             <div className="space-y-2">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-1 md:space-y-0">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
                                     <div className="flex items-center gap-1">
                                         <Thermometer className="h-3 w-3 text-orange-600" />
 
@@ -274,7 +274,7 @@ export function IoTDeviceCard({
                                     </div>
 
                                     {history.temperature.length > 0 && (
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <div className="flex items-center gap-3 text-xs">
                                             <span>Min: {Math.min(...history.temperature.map((item: TemperatureInterface): number => item.value)).toFixed(1)}°C</span>
 
                                             <span>Max: {Math.max(...history.temperature.map((item: TemperatureInterface): number => item.value)).toFixed(1)}°C</span>
@@ -422,7 +422,7 @@ export function IoTDeviceCard({
                             </div>
 
                             <div className="space-y-2">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-1 md:space-y-0">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
                                     <div className="flex items-center gap-1">
                                         <Droplets className="h-3 w-3 text-cyan-600" />
 
@@ -430,7 +430,7 @@ export function IoTDeviceCard({
                                     </div>
 
                                     {history.humidity.length > 0 && (
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <div className="flex items-center gap-3 text-xs">
                                             <span>Min: {Math.min(...history.humidity.map((item: HumidityInterface): number => item.value)).toFixed(1)}%</span>
 
                                             <span>Max: {Math.max(...history.humidity.map((item: HumidityInterface): number => item.value)).toFixed(1)}%</span>
