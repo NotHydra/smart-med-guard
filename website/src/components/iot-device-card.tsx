@@ -132,7 +132,7 @@ export function IoTDeviceCard({
                         temperature: data.temperature,
                         humidity: data.humidity,
                         occupancy: data.occupancy,
-                        lastUpdate: new Date(),
+                        lastUpdate: new Date(data.temperature.timestamp),
                     };
 
                     setCurrentValue((): IoTDeviceCurrentValueInterface => {
