@@ -165,7 +165,7 @@ export function IoTDeviceCard({
         <Card className="relative overflow-hidden">
             <div className={`absolute top-0 left-0 w-full h-1 ${status === Status.CONNECTING ? 'bg-amber-500' : status === Status.ONLINE ? 'bg-green-500' : 'bg-red-500'}`} />
 
-            <CardContent className="p-3 space-y-4">
+            <CardContent className="p-3 space-y-5">
                 <div className="flex items-start justify-between">
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -194,50 +194,52 @@ export function IoTDeviceCard({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                            <Thermometer className="h-3 w-3 text-orange-600" />
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
+                        <div>
+                            <div className="flex items-center gap-1">
+                                <Thermometer className="h-3 w-3 text-orange-600" />
 
-                            <span className="text-xs text-muted-foreground">Temperature</span>
+                                <span className="text-xs text-muted-foreground">Temperature</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <p className="text-lg font-semibold">
+                                    {currentValue !== undefined //
+                                        ? `${currentValue.temperature.value} °C`
+                                        : '-'}
+                                </p>
+
+                                {currentValue !== undefined &&
+                                    history !== undefined && ( //
+                                        <div className="flex items-center">{getTrendIcon(getTrend<TemperatureInterface>(history.temperature), 3)}</div>
+                                    )}
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">
-                                {currentValue !== undefined //
-                                    ? `${currentValue.temperature.value} °C`
-                                    : '-'}
-                            </p>
+                        <div>
+                            <div className="flex items-center gap-1">
+                                <Droplets className="h-3 w-3 text-cyan-600" />
 
-                            {currentValue !== undefined &&
-                                history !== undefined && ( //
-                                    <div className="flex items-center">{getTrendIcon(getTrend<TemperatureInterface>(history.temperature), 3)}</div>
-                                )}
+                                <span className="text-xs text-muted-foreground">Humidity</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <p className="text-lg font-semibold">
+                                    {currentValue !== undefined //
+                                        ? `${currentValue.humidity.value}%`
+                                        : '-'}
+                                </p>
+
+                                {currentValue !== undefined &&
+                                    history !== undefined && ( //
+                                        <div className="flex items-center">{getTrendIcon(getTrend<HumidityInterface>(history.humidity), 3)}</div>
+                                    )}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                            <Droplets className="h-3 w-3 text-cyan-600" />
-
-                            <span className="text-xs text-muted-foreground">Humidity</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">
-                                {currentValue !== undefined //
-                                    ? `${currentValue.humidity.value}%`
-                                    : '-'}
-                            </p>
-
-                            {currentValue !== undefined &&
-                                history !== undefined && ( //
-                                    <div className="flex items-center">{getTrendIcon(getTrend<HumidityInterface>(history.humidity), 3)}</div>
-                                )}
-                        </div>
-                    </div>
-
-                    <div className="space-y-1">
+                    <div>
                         <div className="flex items-center gap-1">
                             <User className="h-3 w-3 text-green-600" />
 
