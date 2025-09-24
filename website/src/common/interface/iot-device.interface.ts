@@ -10,9 +10,15 @@ export interface HistoricalDataInterface {
     timestamp: string;
 }
 
-export interface TemperatureInterface extends HistoricalDataInterface {}
+export interface TemperatureInterface {
+    value: number;
+    timestamp: string;
+}
 
-export interface HumidityInterface extends HistoricalDataInterface {}
+export interface HumidityInterface {
+    value: number;
+    timestamp: string;
+}
 
 export interface OccupancyInterface {
     value: number;

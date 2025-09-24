@@ -198,7 +198,7 @@ export function IoTDeviceCard({
                 socket.disconnect();
             }
         };
-    }, []);
+    }, [iotDevice.id]);
 
     console.log(`🔄 (${iotDevice.id}) Current Value:`, currentValue);
     console.log(`📜 (${iotDevice.id}) History:`, history);
@@ -420,7 +420,7 @@ export function IoTDeviceCard({
 
                                                         return `Time: ${value}`;
                                                     }}
-                                                    formatter={(value, name, props) => [`${Number(value).toFixed(2)} °C`, 'Temperature']}
+                                                    formatter={(value) => [`${Number(value).toFixed(2)} °C`, 'Temperature']}
                                                     contentStyle={{
                                                         backgroundColor: '#1F2937',
                                                         border: '1px solid #374151',
@@ -576,7 +576,7 @@ export function IoTDeviceCard({
 
                                                         return `Time: ${value}`;
                                                     }}
-                                                    formatter={(value, name, props) => [`${Number(value).toFixed(2)}%`, 'Humidity']}
+                                                    formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Humidity']}
                                                     contentStyle={{
                                                         backgroundColor: '#1F2937',
                                                         border: '1px solid #374151',

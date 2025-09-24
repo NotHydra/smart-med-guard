@@ -8,13 +8,13 @@ docker compose --profile development stop
 
 docker compose --profile development exec server-development pnpm run prisma:migrate
 docker compose --profile development exec server-development pnpm run prisma:generate
-docker compose --profile development exec server-development pnpm run prisma:seed
 docker compose --profile development exec server-development pnpm run prisma:reset
+docker compose --profile development exec server-development pnpm run prisma:seed
 
 docker compose --profile production exec server-production pnpm run prisma:migrate
 docker compose --profile production exec server-production pnpm run prisma:generate
-docker compose --profile production exec server-production pnpm run prisma:seed
 docker compose --profile production exec server-production pnpm run prisma:reset
+docker compose --profile production exec server-production pnpm run prisma:seed
 
 
 
