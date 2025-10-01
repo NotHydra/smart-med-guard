@@ -4,6 +4,9 @@
 			"path": "./"
 		},
 		{
+			"path": "./diagram"
+		},
+		{
 			"path": "./server"
 		},
 		{
