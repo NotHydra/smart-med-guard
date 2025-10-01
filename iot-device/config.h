@@ -15,11 +15,11 @@ const int DHTTYPE = 22;
 const int PIRPIN = 18;
 
 // Sensor Configuration
-const unsigned long SENSOR_INTERVAL = 5 * 1000;
+const unsigned long SENSOR_INTERVAL = 3 * 1000;
 
 // WiFi Configuration
-const char* WIFI_SSID = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID = "SmartMedGuard";
+const char* WIFI_PASSWORD = "12341234";
 const int WIFI_TIMEOUT = 30;
 
 // MQTT Broker Configuration
