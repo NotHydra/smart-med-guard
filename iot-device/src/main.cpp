@@ -20,6 +20,8 @@ PubSubClient mqttClient(wifiClient);
 
 const String topic = String("iot-device/") + DEVICE_AGENCY + "/" + String(DEVICE_FLOOR) + "/" + DEVICE_ROOM;
 unsigned long lastSensorReading = 0;
+unsigned long lastMotionDetected = 0;
+bool presenceDetected = false;
 
 void printBorder();
 void initializeDisplay();
@@ -127,17 +129,14 @@ void displaySensorData(float temperature, float humidity, bool occupancy, const 
     display.clearDisplay();
     display.setCursor(0, 0);
     
-    // Title
     display.setTextSize(1);
     display.println("SmartMedGuard");
     display.println("-------------------");
     
-    // Device info
     display.print("Room: ");
     display.println(DEVICE_ROOM);
     display.println();
     
-    // Sensor data
     if (!isnan(temperature) && !isnan(humidity)) {
         display.print("Temp: ");
         display.print(temperature, 1);
@@ -150,10 +149,9 @@ void displaySensorData(float temperature, float humidity, bool occupancy, const 
         display.println("Sensor Error!");
     }
     
-    display.print("Motion: ");
-    display.println(occupancy ? "DETECTED" : "None");
-    
-    // Status
+    display.print("Presence: ");
+    display.println(occupancy ? "Occupied" : "Empty");
+
     display.println();
     display.print("Status: ");
     display.println(status);
@@ -303,8 +301,16 @@ void reconnectMQTT() {
 void readAndPublishSensorData() {
     const float temperature = dht.readTemperature();
     const float humidity = dht.readHumidity();
-    const int motionValue = digitalRead(PIRPIN);
-    const bool occupancy = (motionValue == HIGH);
+    const bool currentMotion = digitalRead(PIRPIN) == HIGH;
+
+    if (currentMotion == true) {
+        lastMotionDetected = millis();
+        presenceDetected = true;
+    } else {
+        if ((millis() - lastMotionDetected) > PRESENCE_TIMEOUT) {
+            presenceDetected = false;
+        }
+    }
 
     const unsigned long timestamp = millis();
     Serial.printf("\n[%lu ms] Sensor Reading:\n", timestamp);
@@ -319,12 +325,16 @@ void readAndPublishSensorData() {
         Serial.printf("- Humidity: %.1f%%\n", humidity);
     }
 
-    Serial.printf("- Motion: %s\n", occupancy ? "DETECTED" : "None");
+    Serial.printf("- Motion (current): %s\n", currentMotion ? "DETECTED" : "None");
+    Serial.printf("- Presence (overall): %s\n", presenceDetected ? "OCCUPIED" : "Empty");
+    if (presenceDetected && !currentMotion) {
+        unsigned long timeSinceMotion = (millis() - lastMotionDetected) / 1000;
+        Serial.printf("  (Last motion: %lu seconds ago)\n", timeSinceMotion);
+    }
 
-    // Update display with current sensor data
     String status;
     if (validReading && mqttClient.connected()) {
-        publishSensorData(temperature, humidity, occupancy);
+        publishSensorData(temperature, humidity, presenceDetected);
         status = "Published";
     } else if (!validReading) {
         Serial.println("Skipping MQTT publish due to invalid sensor readings");
@@ -334,7 +344,7 @@ void readAndPublishSensorData() {
         status = "MQTT Disconn.";
     }
     
-    displaySensorData(temperature, humidity, occupancy, status);
+    displaySensorData(temperature, humidity, presenceDetected, status);
 }
 
 void publishSensorData(float temperature, float humidity, bool occupancy) {
