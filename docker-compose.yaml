@@ -31,7 +31,8 @@ services:
             - ./website/src:/app/src:ro
             - ./website/public:/app/public:ro
 
-        command: ["pnpm", "run", "dev", "-H", "0.0.0.0", "-p", "${WEBSITE_PORT}"]
+        command:
+            ["pnpm", "run", "dev", "-H", "0.0.0.0", "-p", "${WEBSITE_PORT}"]
 
         restart: unless-stopped
 
@@ -125,7 +126,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://0.0.0.0:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
@@ -179,7 +180,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://${SERVER_HOST}:${SERVER_PORT} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://0.0.0.0:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
