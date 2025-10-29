@@ -66,11 +66,7 @@ services:
         ports:
             - ${WEBSITE_PORT}:${WEBSITE_PORT}
 
-        depends_on:
-            server-production:
-                condition: service_healthy
-
-        restart: unless-stopped
+        restart: always
 
         networks:
             - smart-med-guard-network
@@ -171,20 +167,10 @@ services:
             database-production:
                 condition: service_healthy
 
-        restart: unless-stopped
+        restart: always
 
         networks:
             - smart-med-guard-network
-
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://0.0.0.0:${SERVER_PORT} || exit 1",
-                ]
-            interval: 10s
-            timeout: 5s
-            retries: 5
 
     mqtt-test-development:
         container_name: smart-med-guard-mqtt-test-development
@@ -270,37 +256,37 @@ services:
         networks:
             - smart-med-guard-network
 
-    prisma-studio-production:
-        container_name: smart-med-guard-prisma-studio-production
+    # prisma-studio-production:
+    #     container_name: smart-med-guard-prisma-studio-production
 
-        profiles:
-            - production
+    #     profiles:
+    #         - production
 
-        build:
-            context: ./server
+    #     build:
+    #         context: ./server
 
-            target: base
+    #         target: base
 
-        env_file:
-            - .env
+    #     env_file:
+    #         - .env
 
-        environment:
-            - POSTGRES_URL=${POSTGRES_URL}
+    #     environment:
+    #         - POSTGRES_URL=${POSTGRES_URL}
 
-        ports:
-            - ${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}
+    #     ports:
+    #         - ${PRISMA_STUDIO_PORT}:${PRISMA_STUDIO_PORT}
 
-        depends_on:
-            server-production:
-                condition: service_healthy
+    #     depends_on:
+    #         server-production:
+    #             condition: service_healthy
 
-        command:
-            ["pnpm", "run", "prisma:studio", "--port", "${PRISMA_STUDIO_PORT}"]
+    #     command:
+    #         ["pnpm", "run", "prisma:studio", "--port", "${PRISMA_STUDIO_PORT}"]
 
-        restart: unless-stopped
+    #     restart: unless-stopped
 
-        networks:
-            - smart-med-guard-network
+    #     networks:
+    #         - smart-med-guard-network
 
     database-development:
         image: postgres:latest
@@ -362,7 +348,7 @@ services:
         networks:
             - smart-med-guard-network
 
-        restart: unless-stopped
+        restart: always
 
         healthcheck:
             test:
