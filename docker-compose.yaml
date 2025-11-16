@@ -126,7 +126,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- ${SERVER_URL} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://0.0.0.0:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
@@ -180,7 +180,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- ${SERVER_URL} || exit 1",
+                    "wget --header='x-api-key: ${SERVER_API_KEY}' -qO- http://0.0.0.0:${SERVER_PORT} || exit 1",
                 ]
             interval: 10s
             timeout: 5s
