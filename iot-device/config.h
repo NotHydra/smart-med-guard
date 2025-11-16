@@ -22,6 +22,7 @@ const unsigned long PRESENCE_TIMEOUT = 5 * 60 * 1000;
 const char* WIFI_SSID = "SmartMedGuard";
 const char* WIFI_PASSWORD = "123123123";
 const int WIFI_TIMEOUT = 30;
+const unsigned long WIFI_RECONNECT_INTERVAL = 60 * 1000;  // Reconnection attempt interval in offline mode
 
 // MQTT Broker Configuration
 const char* MQTT_HOST = "smart-med-guard.local";
