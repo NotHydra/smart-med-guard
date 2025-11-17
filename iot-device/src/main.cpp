@@ -1,11 +1,11 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 
 #include "../config.h"
 
@@ -21,7 +21,9 @@ PubSubClient mqttClient(wifiClient);
 const String topic = String("iot-device/") + DEVICE_AGENCY + "/" + String(DEVICE_FLOOR) + "/" + DEVICE_ROOM;
 unsigned long lastSensorReading = 0;
 unsigned long lastMotionDetected = 0;
+unsigned long lastWiFiReconnectAttempt = 0;
 bool presenceDetected = false;
+bool offlineMode = false;
 
 void printBorder();
 void initializeDisplay();
@@ -32,6 +34,7 @@ void connectToWiFi();
 void setupMQTT();
 void connectToMQTT();
 void reconnectMQTT();
+void attemptWiFiReconnect();
 void readAndPublishSensorData();
 void publishSensorData(float temperature, float humidity, bool occupancy);
 
@@ -61,13 +64,15 @@ void setup() {
 
     printBorder();
 
-    setupMQTT();
+    if (!offlineMode) {
+        setupMQTT();
 
-    printBorder();
+        printBorder();
 
-    connectToMQTT();
+        connectToMQTT();
 
-    printBorder();
+        printBorder();
+    }
 
     Serial.println("Starting monitoring...");
     displayMessage("Starting\nmonitoring...", true);
@@ -76,13 +81,20 @@ void setup() {
 }
 
 void loop() {
-    if (!mqttClient.connected()) {
+    // Attempt WiFi reconnection in background if in offline mode
+    if (offlineMode && (millis() - lastWiFiReconnectAttempt) >= WIFI_RECONNECT_INTERVAL) {
+        attemptWiFiReconnect();
+    }
+
+    if (!offlineMode && !mqttClient.connected()) {
         reconnectMQTT();
 
         printBorder();
     }
 
-    mqttClient.loop();
+    if (!offlineMode) {
+        mqttClient.loop();
+    }
 
     if ((millis() - lastSensorReading) >= SENSOR_INTERVAL) {
         readAndPublishSensorData();
@@ -97,14 +109,14 @@ void loop() {
 
 void initializeDisplay() {
     Serial.println("Initializing OLED display...");
-    
+
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
         Serial.println("Failed to initialize OLED display!");
         Serial.println("Check wiring: VCC->3.3V, GND->GND, SDA->GPIO21, SCL->GPIO22");
 
         return;
     }
-    
+
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
@@ -112,7 +124,7 @@ void initializeDisplay() {
     display.println("SmartMedGuard");
     display.println("Initializing...");
     display.display();
-    
+
     Serial.println("OLED display initialized successfully");
 }
 
@@ -128,34 +140,39 @@ void displayMessage(const String& message, bool clearFirst) {
 void displaySensorData(float temperature, float humidity, bool occupancy, const String& status) {
     display.clearDisplay();
     display.setCursor(0, 0);
-    
+
     display.setTextSize(1);
+
+    // Show offline indicator if in offline mode
     display.println("SmartMedGuard");
+    if (offlineMode) {
+        display.println("[OFFLINE]");
+    }
     display.println("-------------------");
-    
+
     display.print("Room: ");
     display.println(DEVICE_ROOM);
     display.println();
-    
+
     if (!isnan(temperature) && !isnan(humidity)) {
         display.print("Temp: ");
         display.print(temperature, 1);
         display.println("C");
-        
+
         display.print("Humidity: ");
         display.print(humidity, 1);
         display.println("%");
     } else {
         display.println("Sensor Error!");
     }
-    
+
     display.print("Presence: ");
     display.println(occupancy ? "Occupied" : "Empty");
 
     display.println();
     display.print("Status: ");
     display.println(status);
-    
+
     display.display();
 }
 
@@ -188,7 +205,7 @@ void connectToWiFi() {
     Serial.println("Connecting to WiFi...");
     Serial.printf("SSID: %s\n", WIFI_SSID);
     Serial.printf("Password: %s\n", WIFI_PASSWORD);
-    
+
     displayMessage("Connecting to\nWiFi...", true);
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -207,7 +224,7 @@ void connectToWiFi() {
         Serial.println("WiFi connected successfully!");
         Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
         Serial.printf("Signal Strength: %d dBm\n", WiFi.RSSI());
-        
+
         display.clearDisplay();
         display.setCursor(0, 0);
         display.println("WiFi Connected!");
@@ -218,15 +235,17 @@ void connectToWiFi() {
         display.print(WiFi.RSSI());
         display.println(" dBm");
         display.display();
+
+        offlineMode = false;
     } else {
         Serial.println("Failed to connect to WiFi!");
-        Serial.println("Please check your WiFi credentials and try again.");
-        
-        displayMessage("WiFi Failed!\nCheck credentials", true);
+        Serial.println("Entering offline mode - device will continue reading sensors locally");
 
-        while (true) {
-            delay(1000);
-        }
+        displayMessage("WiFi Failed!\nEntering\nOffline Mode", true);
+        delay(2000);
+
+        offlineMode = true;
+        lastWiFiReconnectAttempt = millis();
     }
 }
 
@@ -234,7 +253,7 @@ void setupMQTT() {
     Serial.println("Setting up MQTT...");
     Serial.printf("MQTT Broker: %s:%d\n", MQTT_HOST, MQTT_PORT);
     Serial.printf("Client ID: %s\n", MQTT_CLIENT_ID);
-    
+
     displayMessage("Setting up\nMQTT...", true);
 
     mqttClient.setServer(MQTT_HOST, MQTT_PORT);
@@ -247,7 +266,7 @@ void connectToMQTT() {
     int attempts = 0;
     while (!mqttClient.connected() && attempts < MQTT_RETRY_ATTEMPTS) {
         Serial.printf("Attempt %d/%d...", attempts + 1, MQTT_RETRY_ATTEMPTS);
-        
+
         display.clearDisplay();
         display.setCursor(0, 0);
         display.println("MQTT Connect...");
@@ -263,7 +282,7 @@ void connectToMQTT() {
             Serial.printf("- Agency: %s\n", DEVICE_AGENCY);
             Serial.printf("- Floor: %d\n", DEVICE_FLOOR);
             Serial.printf("- Room: %s\n", DEVICE_ROOM);
-            
+
             display.clearDisplay();
             display.setCursor(0, 0);
             display.println("MQTT Connected!");
@@ -290,12 +309,41 @@ void connectToMQTT() {
 
 void reconnectMQTT() {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi disconnected. Reconnecting...");
-        connectToWiFi();
-        printBorder();
+        Serial.println("WiFi disconnected. Entering offline mode...");
+        offlineMode = true;
+        lastWiFiReconnectAttempt = millis();
+        return;
     }
 
     connectToMQTT();
+}
+
+void attemptWiFiReconnect() {
+    Serial.println("Attempting WiFi reconnection in background...");
+    Serial.printf("SSID: %s\n", WIFI_SSID);
+
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 5) {
+        delay(1000);
+        attempts++;
+    }
+
+    lastWiFiReconnectAttempt = millis();
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("WiFi reconnected successfully!");
+        Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
+        Serial.printf("Signal Strength: %d dBm\n", WiFi.RSSI());
+
+        offlineMode = false;
+
+        setupMQTT();
+        connectToMQTT();
+    } else {
+        Serial.printf("WiFi reconnection failed. Will retry in %lu seconds\n", WIFI_RECONNECT_INTERVAL / 1000);
+    }
 }
 
 void readAndPublishSensorData() {
@@ -333,17 +381,20 @@ void readAndPublishSensorData() {
     }
 
     String status;
-    if (validReading && mqttClient.connected()) {
+    if (!validReading) {
+        Serial.println("Skipping local display update due to invalid sensor readings");
+        status = "Sensor Error";
+    } else if (offlineMode) {
+        Serial.println("Device in offline mode - displaying sensor data locally only");
+        status = "Offline";
+    } else if (mqttClient.connected()) {
         publishSensorData(temperature, humidity, presenceDetected);
         status = "Published";
-    } else if (!validReading) {
-        Serial.println("Skipping MQTT publish due to invalid sensor readings");
-        status = "Sensor Error";
     } else {
-        Serial.println("Skipping MQTT publish due to not connected to broker");
+        Serial.println("Skipping MQTT publish - not connected to broker");
         status = "MQTT Disconn.";
     }
-    
+
     displaySensorData(temperature, humidity, presenceDetected, status);
 }
 
