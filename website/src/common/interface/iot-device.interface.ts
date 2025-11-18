@@ -28,7 +28,7 @@ export interface IoTDeviceCurrentValueInterface {
     temperature: TemperatureInterface;
     humidity: HumidityInterface;
     occupancy: OccupancyInterface;
-    lastUpdate: Date;
+    timestamp: string;
 }
 
 export interface IoTDeviceHistoryInterface {

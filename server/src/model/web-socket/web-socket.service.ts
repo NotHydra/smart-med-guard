@@ -179,6 +179,7 @@ export class WebSocketService implements OnGatewayConnection, OnGatewayDisconnec
                     occupancy: {
                         value: iotDevice.occupancyReadings[0].value,
                     },
+                    timestamp: iotDevice.temperatureReadings[0].timestamp,
                 });
             }
 

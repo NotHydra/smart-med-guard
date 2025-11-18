@@ -152,4 +152,30 @@ export class UtilityService {
 
         return result;
     }
+
+    public convertToISO8601(
+        timestamp: string //
+    ): string {
+        this.loggerService.verbose({
+            message: MESSAGE.GENERAL.START,
+            addedContext: this.convertToISO8601.name,
+        });
+
+        this.loggerService.verbose({
+            message: `${MESSAGE.GENERAL.PARAMETER}: ${this.pretty({
+                timestamp: timestamp,
+            })}`,
+            addedContext: this.convertToISO8601.name,
+        });
+
+        // Convert "YYYY-MM-DD HH:MM:SS" to ISO-8601 "YYYY-MM-DDTHH:MM:SS.000Z"
+        const result: string = new Date(timestamp.replace(" ", "T") + "Z").toISOString();
+
+        this.loggerService.verbose({
+            message: `${MESSAGE.GENERAL.RESULT}: ${result}`,
+            addedContext: this.convertToISO8601.name,
+        });
+
+        return result;
+    }
 }

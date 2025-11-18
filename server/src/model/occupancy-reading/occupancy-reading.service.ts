@@ -21,9 +21,11 @@ export class OccupancyReadingService {
     public async add({
         iotDeviceId, //
         occupancy,
+        timestamp,
     }: {
         iotDeviceId: string;
         occupancy: boolean;
+        timestamp: string;
     }): Promise<OccupancyReading> {
         try {
             this.loggerService.log({
@@ -35,6 +37,7 @@ export class OccupancyReadingService {
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     iotDeviceId: iotDeviceId,
                     occupancy: occupancy,
+                    timestamp: timestamp,
                 })}`,
                 addedContext: this.add.name,
             });
@@ -43,6 +46,7 @@ export class OccupancyReadingService {
                 data: {
                     iotDeviceId: iotDeviceId,
                     value: occupancy,
+                    timestamp: this.utilityService.convertToISO8601(timestamp),
                 },
             });
 

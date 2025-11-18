@@ -60,21 +60,7 @@ export class MQTTService {
         }
     }
 
-    public async subscribeIoTDevice({
-        agency,
-        floor,
-        room,
-        temperature,
-        humidity,
-        occupancy,
-    }: {
-        agency: string;
-        floor: number;
-        room: string;
-        temperature: number;
-        humidity: number;
-        occupancy: boolean;
-    }): Promise<void> {
+    public async subscribeIoTDevice({ agency, floor, room, temperature, humidity, occupancy, timestamp }: { agency: string; floor: number; room: string; temperature: number; humidity: number; occupancy: boolean; timestamp: string }): Promise<void> {
         try {
             this.loggerService.log({
                 message: `${MESSAGE.GENERAL.START}`,
@@ -89,6 +75,7 @@ export class MQTTService {
                     temperature: temperature,
                     humidity: humidity,
                     occupancy: occupancy,
+                    timestamp: timestamp,
                 })}`,
                 addedContext: this.subscribeIoTDevice.name,
             });
@@ -97,6 +84,7 @@ export class MQTTService {
                 agency: agency,
                 floor: floor,
                 room: room,
+                timestamp: timestamp,
             });
 
             this.loggerService.debug({
@@ -110,16 +98,19 @@ export class MQTTService {
                 this.temperatureReadingService.add({
                     iotDeviceId: iotDevice.id,
                     temperature: temperature,
+                    timestamp: timestamp,
                 }),
 
                 this.humidityReadingService.add({
                     iotDeviceId: iotDevice.id,
                     humidity: humidity,
+                    timestamp: timestamp,
                 }),
 
                 this.occupancyReadingService.add({
                     iotDeviceId: iotDevice.id,
                     occupancy: occupancy,
+                    timestamp: timestamp,
                 }),
             ]);
 
@@ -142,6 +133,7 @@ export class MQTTService {
                 occupancy: {
                     value: occupancyReading.value,
                 },
+                timestamp: this.utilityService.convertToISO8601(timestamp),
             });
 
             this.loggerService.debug({

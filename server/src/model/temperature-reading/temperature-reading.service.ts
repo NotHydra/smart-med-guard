@@ -21,9 +21,11 @@ export class TemperatureReadingService {
     public async add({
         iotDeviceId, //
         temperature,
+        timestamp,
     }: {
         iotDeviceId: string;
         temperature: number;
+        timestamp: string;
     }): Promise<TemperatureReading> {
         try {
             this.loggerService.log({
@@ -35,6 +37,7 @@ export class TemperatureReadingService {
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     iotDeviceId: iotDeviceId,
                     temperature: temperature,
+                    timestamp: timestamp,
                 })}`,
                 addedContext: this.add.name,
             });
@@ -43,6 +46,7 @@ export class TemperatureReadingService {
                 data: {
                     iotDeviceId: iotDeviceId,
                     value: temperature,
+                    timestamp: this.utilityService.convertToISO8601(timestamp),
                 },
             });
 

@@ -21,9 +21,11 @@ export class HumidityReadingService {
     public async add({
         iotDeviceId, //
         humidity,
+        timestamp,
     }: {
         iotDeviceId: string;
         humidity: number;
+        timestamp: string;
     }): Promise<HumidityReading> {
         try {
             this.loggerService.log({
@@ -35,6 +37,7 @@ export class HumidityReadingService {
                 message: `${MESSAGE.GENERAL.PARAMETER}: ${this.utilityService.pretty({
                     iotDeviceId: iotDeviceId,
                     humidity: humidity,
+                    timestamp: timestamp,
                 })}`,
                 addedContext: this.add.name,
             });
@@ -43,6 +46,7 @@ export class HumidityReadingService {
                 data: {
                     iotDeviceId: iotDeviceId,
                     value: humidity,
+                    timestamp: this.utilityService.convertToISO8601(timestamp),
                 },
             });
 
