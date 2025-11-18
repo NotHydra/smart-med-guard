@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <DHT.h>
 #include <PubSubClient.h>
+#include <RTClib.h>
 #include <WiFi.h>
 #include <Wire.h>
 
@@ -17,6 +18,8 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
+RTC_DS3231 rtc;
+const int TIMEZONE_OFFSET = 8;  // GMT+8
 
 const String topic = String("iot-device/") + DEVICE_AGENCY + "/" + String(DEVICE_FLOOR) + "/" + DEVICE_ROOM;
 unsigned long lastSensorReading = 0;
@@ -30,13 +33,16 @@ void initializeDisplay();
 void displayMessage(const String& message, bool clearFirst = true);
 void displaySensorData(float temperature, float humidity, bool occupancy, const String& status);
 void initializeSensors();
+void initializeRTC();
 void connectToWiFi();
 void setupMQTT();
 void connectToMQTT();
 void reconnectMQTT();
 void attemptWiFiReconnect();
 void readAndPublishSensorData();
-void publishSensorData(float temperature, float humidity, bool occupancy);
+void publishSensorData(float temperature, float humidity, bool occupancy, const String& timestamp);
+DateTime getLocalDateTime();
+void syncRTCWithNTP();
 
 void printBorder() {
     Serial.println("========================================");
@@ -60,6 +66,10 @@ void setup() {
 
     printBorder();
 
+    initializeRTC();
+
+    printBorder();
+
     connectToWiFi();
 
     printBorder();
@@ -75,8 +85,18 @@ void setup() {
     }
 
     Serial.println("Starting monitoring...");
-    displayMessage("Starting\nmonitoring...", true);
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.println("Starting");
+    display.println("monitoring...");
+    display.display();
     delay(2000);
+
+    // Clear display for first sensor reading
+    display.clearDisplay();
+    display.display();
     printBorder();
 }
 
@@ -133,26 +153,32 @@ void displayMessage(const String& message, bool clearFirst) {
         display.clearDisplay();
         display.setCursor(0, 0);
     }
+
     display.println(message);
     display.display();
 }
 
 void displaySensorData(float temperature, float humidity, bool occupancy, const String& status) {
     display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
 
-    display.setTextSize(1);
+    display.print("SmartMedGuard #");
+    display.println(DEVICE_ROOM);
+
+    // Display RTC timestamp
+    DateTime now = getLocalDateTime();
+    char timeBuffer[32];
+    sprintf(timeBuffer, "%04d-%02d-%02d %02d:%02d:%02d", now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
+    display.println(timeBuffer);
 
     // Show offline indicator if in offline mode
-    display.println("SmartMedGuard");
     if (offlineMode) {
         display.println("[OFFLINE]");
     }
-    display.println("-------------------");
 
-    display.print("Room: ");
-    display.println(DEVICE_ROOM);
-    display.println();
+    display.println("-------------------");
 
     if (!isnan(temperature) && !isnan(humidity)) {
         display.print("Temp: ");
@@ -169,11 +195,8 @@ void displaySensorData(float temperature, float humidity, bool occupancy, const 
     display.print("Presence: ");
     display.println(occupancy ? "Occupied" : "Empty");
 
-    display.println();
-    display.print("Status: ");
-    display.println(status);
-
     display.display();
+    delay(10);
 }
 
 void initializeSensors() {
@@ -198,6 +221,29 @@ void initializeSensors() {
         Serial.println("Test readings:");
         Serial.printf("- Temperature: %.1f°C\n", testTemperature);
         Serial.printf("- Humidity: %.1f%%\n", testHumidity);
+    }
+}
+
+void initializeRTC() {
+    Serial.println("Initializing RTC...");
+    displayMessage("Initializing\nRTC...", true);
+
+    if (!rtc.begin()) {
+        Serial.println("ERROR: RTC DS3231 not found!");
+        Serial.println("Check wiring: VCC->3.3V, GND->GND, SDA->GPIO21, SCL->GPIO22");
+
+        displayMessage("RTC Error!\nCheck wiring", true);
+
+        return;
+    }
+
+    // Check if RTC lost power
+    if (rtc.lostPower()) {
+        Serial.println("RTC lost power. Time will be synced with NTP after WiFi connection.");
+    } else {
+        DateTime now = rtc.now();
+        Serial.println("RTC initialized successfully");
+        Serial.printf("Current RTC time (UTC): %04d-%02d-%02d %02d:%02d:%02d\n", now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second());
     }
 }
 
@@ -236,16 +282,23 @@ void connectToWiFi() {
         display.println(" dBm");
         display.display();
 
+        // Sync RTC with NTP time
+        syncRTCWithNTP();
+
         offlineMode = false;
     } else {
         Serial.println("Failed to connect to WiFi!");
         Serial.println("Entering offline mode - device will continue reading sensors locally");
 
-        displayMessage("WiFi Failed!\nEntering\nOffline Mode", true);
-        delay(2000);
+        displayMessage("WiFi Failed!\nOffline Mode", true);
+        delay(1500);
 
         offlineMode = true;
         lastWiFiReconnectAttempt = millis();
+
+        // Clear display before monitoring starts
+        display.clearDisplay();
+        display.display();
     }
 }
 
@@ -310,8 +363,10 @@ void connectToMQTT() {
 void reconnectMQTT() {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi disconnected. Entering offline mode...");
+
         offlineMode = true;
         lastWiFiReconnectAttempt = millis();
+
         return;
     }
 
@@ -327,6 +382,7 @@ void attemptWiFiReconnect() {
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 5) {
         delay(1000);
+
         attempts++;
     }
 
@@ -360,8 +416,17 @@ void readAndPublishSensorData() {
         }
     }
 
-    const unsigned long timestamp = millis();
-    Serial.printf("\n[%lu ms] Sensor Reading:\n", timestamp);
+    // Get local time (GMT+8) for display
+    DateTime localNow = getLocalDateTime();
+    char displayTimestampBuffer[32];
+    sprintf(displayTimestampBuffer, "%04d-%02d-%02d %02d:%02d:%02d", localNow.year(), localNow.month(), localNow.day(), localNow.hour(), localNow.minute(), localNow.second());
+
+    // Get UTC time for MQTT
+    DateTime utcNow = rtc.now();
+    char mqttTimestampBuffer[32];
+    sprintf(mqttTimestampBuffer, "%04d-%02d-%02d %02d:%02d:%02d", utcNow.year(), utcNow.month(), utcNow.day(), utcNow.hour(), utcNow.minute(), utcNow.second());
+
+    Serial.printf("\n[%s] Sensor Reading:\n", displayTimestampBuffer);
 
     bool validReading = true;
     if (isnan(temperature) || isnan(humidity)) {
@@ -377,28 +442,33 @@ void readAndPublishSensorData() {
     Serial.printf("- Presence (overall): %s\n", presenceDetected ? "OCCUPIED" : "Empty");
     if (presenceDetected && !currentMotion) {
         unsigned long timeSinceMotion = (millis() - lastMotionDetected) / 1000;
+
         Serial.printf("  (Last motion: %lu seconds ago)\n", timeSinceMotion);
     }
 
     String status;
     if (!validReading) {
         Serial.println("Skipping local display update due to invalid sensor readings");
+
         status = "Sensor Error";
     } else if (offlineMode) {
         Serial.println("Device in offline mode - displaying sensor data locally only");
+
         status = "Offline";
     } else if (mqttClient.connected()) {
-        publishSensorData(temperature, humidity, presenceDetected);
+        publishSensorData(temperature, humidity, presenceDetected, mqttTimestampBuffer);
+
         status = "Published";
     } else {
         Serial.println("Skipping MQTT publish - not connected to broker");
+
         status = "MQTT Disconn.";
     }
 
     displaySensorData(temperature, humidity, presenceDetected, status);
 }
 
-void publishSensorData(float temperature, float humidity, bool occupancy) {
+void publishSensorData(float temperature, float humidity, bool occupancy, const String& timestamp) {
     JsonDocument innerDoc;
     innerDoc["agency"] = DEVICE_AGENCY;
     innerDoc["floor"] = DEVICE_FLOOR;
@@ -406,6 +476,7 @@ void publishSensorData(float temperature, float humidity, bool occupancy) {
     innerDoc["temperature"] = round(temperature * 100.0) / 100.0;
     innerDoc["humidity"] = round(humidity * 100.0) / 100.0;
     innerDoc["occupancy"] = occupancy;
+    innerDoc["timestamp"] = timestamp;
 
     String innerDataString;
     serializeJson(innerDoc, innerDataString);
@@ -423,5 +494,60 @@ void publishSensorData(float temperature, float humidity, bool occupancy) {
         Serial.println("Data published successfully!");
     } else {
         Serial.println("Failed to publish data!");
+    }
+}
+
+DateTime getLocalDateTime() {
+    DateTime utcTime = rtc.now();
+
+    // Add timezone offset (GMT+8) in seconds
+    time_t adjustedTime = utcTime.unixtime() + (TIMEZONE_OFFSET * 3600);
+    return DateTime(adjustedTime);
+}
+
+void syncRTCWithNTP() {
+    Serial.println("Syncing RTC with NTP server...");
+    displayMessage("Syncing time\nwith NTP...", true);
+
+    // Configure time with NTP server
+    // Format: configTime(timezone_offset_in_seconds, daylight_offset_in_seconds, ntp_server1, ntp_server2, ntp_server3)
+    // For GMT+8, we use +8 hours (positive because we want the local time in GMT+8)
+    // However, we need to store UTC in the RTC, so we use 0 offset here and handle conversion manually
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov", "time.google.com");
+
+    Serial.println("Waiting for NTP time sync...");
+    time_t now = time(nullptr);
+    int retry = 0;
+    while (now < 24 * 3600 && retry < 20) {
+        delay(500);
+        Serial.print(".");
+        now = time(nullptr);
+        retry++;
+    }
+
+    Serial.println();
+    if (now > 24 * 3600) {
+        // The UTC time from NTP is already correct
+        struct tm* utcInfo = gmtime(&now);
+
+        DateTime utcDateTime(utcInfo->tm_year + 1900, utcInfo->tm_mon + 1, utcInfo->tm_mday,
+                             utcInfo->tm_hour, utcInfo->tm_min, utcInfo->tm_sec);
+        rtc.adjust(utcDateTime);
+
+        Serial.println("RTC synced successfully with NTP!");
+
+        // Display local time (GMT+8) for user feedback
+        time_t localTime = now + (8 * 3600);
+        struct tm* localInfo = gmtime(&localTime);
+        Serial.printf("Current local time (GMT+8): %04d-%02d-%02d %02d:%02d:%02d\n",
+                      localInfo->tm_year + 1900, localInfo->tm_mon + 1, localInfo->tm_mday,
+                      localInfo->tm_hour, localInfo->tm_min, localInfo->tm_sec);
+
+        displayMessage("Time Synced!", true);
+        delay(1500);
+    } else {
+        Serial.println("NTP sync failed - using RTC as-is");
+        displayMessage("NTP Failed\nUsing RTC", true);
+        delay(1500);
     }
 }
