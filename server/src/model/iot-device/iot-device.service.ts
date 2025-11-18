@@ -134,10 +134,12 @@ export class IoTDeviceService {
         agency, //
         floor,
         room,
+        timestamp,
     }: {
         agency: string;
         floor: number;
         room: string;
+        timestamp: string;
     }): Promise<IoTDevice> {
         try {
             this.loggerService.log({
@@ -150,6 +152,7 @@ export class IoTDeviceService {
                     agency: agency,
                     floor: floor,
                     room: room,
+                    timestamp: timestamp,
                 })}`,
                 addedContext: this.findOrCreate.name,
             });
@@ -171,6 +174,8 @@ export class IoTDeviceService {
                             agency: agency,
                             floor: floor,
                             room: room,
+                            createdAt: this.utilityService.convertToISO8601(timestamp),
+                            updatedAt: this.utilityService.convertToISO8601(timestamp),
                         },
                     });
 

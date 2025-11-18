@@ -97,6 +97,7 @@ export class MQTTController {
                 temperature: data.temperature,
                 humidity: data.humidity,
                 occupancy: data.occupancy,
+                timestamp: data.timestamp,
             });
         } catch (error) {
             this.loggerService.error({

@@ -5,6 +5,7 @@ export interface IoTDevicePayload {
     temperature: number;
     humidity: number;
     occupancy: boolean;
+    timestamp: string;
 }
 
 export interface AvailableIoTDevice {
