@@ -132,7 +132,7 @@ export function IoTDeviceCard({
                         temperature: data.temperature,
                         humidity: data.humidity,
                         occupancy: data.occupancy,
-                        lastUpdate: new Date(data.temperature.timestamp),
+                        timestamp: data.timestamp,
                     };
 
                     setCurrentValue((): IoTDeviceCurrentValueInterface => {
@@ -163,9 +163,9 @@ export function IoTDeviceCard({
                     setCurrentValue((currentValue: IoTDeviceCurrentValueInterface | undefined) => {
                         if (currentValue && socket.connected) {
                             const now: Date = new Date();
-                            const timeDifferenceSeconds: number = (now.getTime() - currentValue.lastUpdate.getTime()) / 1000;
+                            const timeDifferenceSeconds: number = (now.getTime() - new Date(currentValue.timestamp).getTime()) / 1000;
 
-                            if (timeDifferenceSeconds > 5) {
+                            if (timeDifferenceSeconds > 10) {
                                 console.log(`⏰ (${iotDevice.id}) Data is stale (${timeDifferenceSeconds.toFixed(1)}s old), setting status to offline`);
 
                                 setStatus(Status.OFFLINE);
@@ -636,13 +636,13 @@ export function IoTDeviceCard({
 
                         <p>
                             {currentValue !== undefined //
-                                ? currentValue.lastUpdate.toLocaleDateString('en-GB', {
+                                ? new Date(currentValue.timestamp).toLocaleDateString('en-GB', {
                                       day: 'numeric',
                                       month: 'long',
                                       year: 'numeric',
                                   }) +
                                   ' - ' +
-                                  currentValue.lastUpdate.toLocaleTimeString('en-GB', {
+                                  new Date(currentValue.timestamp).toLocaleTimeString('en-GB', {
                                       hour12: false,
                                   })
                                 : '-'}
