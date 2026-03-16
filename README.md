@@ -9,6 +9,7 @@
 ## Tech Stack
 
 ![ESP32](https://img.shields.io/badge/ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)
+![Raspberry Pi](https://img.shields.io/badge/-Raspberry_Pi-C51A4A?style=for-the-badge&logo=Raspberry-Pi)
 ![PlatformIO](https://img.shields.io/badge/PlatformIO-FF7300?style=for-the-badge&logo=platformio&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
@@ -31,7 +32,7 @@ smart-med-guard # IoT hospital ward monitoring system
 ├── iot-device # ESP32 firmware for sensors and MQTT communication
 ├── mqtt # MQTT broker (Mosquitto) configuration
 ├── server # NestJS REST API and WebSocket server with Prisma ORM
-├── website # Next.js web dashboard for real-time monitoring
+├── website # NextJS web dashboard for real-time monitoring
 ├── mqtt-test # MQTT publish/subscribe testing utilities
 └── web-socket-test # WebSocket connection testing
 ```
@@ -76,7 +77,7 @@ This will start:
 - **MQTT Broker** (Mosquitto) on port 1883 and 9001
 - **Database** (PostgreSQL) on port 5432
 - **Server** (NestJS API) on port 3001
-- **Website** (Next.js Dashboard) on port 3000
+- **Website** (NextJS Dashboard) on port 3000
 
 ### 4. Run Production Stack
 
