@@ -1,4 +1,6 @@
-# SmartMedGuard
+# SmartMedGuard: Modular Innovation for IoT-Based Patient Room Monitoring in Community Health Centers and Regional General Hospitals
+
+> <p style="text-align: justify"><p>Indonesian Title</p> <p>SmartMedGuard: Inovasi Modular untuk Pemantauan Ruang Rawat Berbasis IoT di Puskesmas dan RSUD</p></p>
 
 <p style="text-align: justify">
     <b>SmartMedGuard</b> is an <b>IoT-based hospital ward monitoring system</b> designed to address the lack of real-time environmental data in community health centers and Class C/D hospitals across Indonesia. The system employs <b>ESP32 microcontrollers</b> equipped with temperature, humidity, and occupancy sensors to continuously monitor ward conditions. Data is transmitted over <b>MQTT</b> to a local <b>Raspberry Pi 5 server</b>, where readings are stored in a <b>PostgreSQL database</b> and streamed to a live web dashboard in real-time, all without requiring internet connectivity.
